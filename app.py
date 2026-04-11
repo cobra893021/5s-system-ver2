@@ -813,6 +813,13 @@ def get_app_mode(mode: str | None = None) -> str:
     return "member" if raw == "member" else "expert"
 
 
+def get_runtime_secret(name: str, default: str = "") -> str:
+    if name in st.secrets:
+        value = st.secrets.get(name)
+        return "" if value is None else str(value)
+    return os.getenv(name, default)
+
+
 # ─── UI 描画：診断結果 ────────────────────────────────────────────────────────────
 def render_results(result: dict, img, mode: str = "expert"):
     st.markdown("---")
@@ -1198,14 +1205,22 @@ def render_sidebar() -> tuple[str, str, str]:
 
         st.markdown("#### 設定")
 
-        api_key = st.text_input(
-            "Gemini API キー",
-            value=os.getenv("GEMINI_API_KEY", ""),
-            type="password",
-            placeholder="AIza...",
-            help="Google AI Studio から取得したAPIキーを入力してください",
-            key="sidebar_api_key"
-        )
+        api_key = get_runtime_secret("GEMINI_API_KEY", "")
+        if api_key:
+            st.markdown(
+                "<div style='color:#475569;font-size:0.92rem;margin-bottom:0.75rem;'>"
+                "Gemini API キー: 設定済み</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            api_key = st.text_input(
+                "Gemini API キー",
+                value="",
+                type="password",
+                placeholder="AIza...",
+                help="Google AI Studio から取得したAPIキーを入力してください",
+                key="sidebar_api_key"
+            )
 
         model_name = st.selectbox(
             "使用モデル",
@@ -1220,7 +1235,8 @@ def render_sidebar() -> tuple[str, str, str]:
         )
         st.markdown("<hr>", unsafe_allow_html=True)
         st.markdown(
-            "<div style='color:#94a3b8;font-size:0.75rem;'>※ APIキーは.envで管理</div>",
+            "<div style='color:#94a3b8;font-size:0.75rem;'>"
+            "※ 本番環境では secrets、ローカルでは .env で管理</div>",
             unsafe_allow_html=True
         )
 
