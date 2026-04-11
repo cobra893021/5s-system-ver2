@@ -30,6 +30,15 @@ HEADERS = [
     "ステータス", "診断士コメント",
 ]
 
+REQUIRED_SAVE_HEADERS = [
+    "record_id",
+    "画像名",
+    "AI改善アクション",
+    "AI総合スコア",
+    "AI総評",
+    "ステータス",
+]
+
 
 def _get_secret(name: str, default: str = "") -> str:
     try:
@@ -121,6 +130,15 @@ def _row_from_headers(headers: list[str], values: dict[str, Any]) -> list[Any]:
     return [values.get(header, "") for header in headers]
 
 
+def _ensure_required_headers(headers: list[str], required_headers: list[str]) -> None:
+    missing = [header for header in required_headers if header not in headers]
+    if missing:
+        raise ValueError(
+            "必要なヘッダーが不足しています。"
+            f" 不足列: {', '.join(missing)}"
+        )
+
+
 def save_to_sheets(
     result: dict[str, Any],
     location: str,
@@ -135,6 +153,7 @@ def save_to_sheets(
     try:
         sheet = _get_sheet(mode)
         headers = sheet.row_values(1) or HEADERS
+        _ensure_required_headers(headers, REQUIRED_SAVE_HEADERS)
         scene = str(result.get("scene_category") or "other")
         summary = str(result.get("summary") or "")
         score = result.get("overall_score", 0)
@@ -170,14 +189,17 @@ def save_to_sheets(
         )
         sheet.append_row(row, value_input_option="USER_ENTERED")
         saved_record_id = ""
+        saved_row_number = ""
         rows = sheet.get_all_values()
         if rows:
             headers = rows[0]
             try:
                 record_id_col = headers.index("record_id")
-                for saved_row in reversed(rows[1:]):
+                for row_idx in range(len(rows), 1, -1):
+                    saved_row = rows[row_idx - 1]
                     if len(saved_row) > record_id_col and saved_row[record_id_col] == record_id:
                         saved_record_id = record_id
+                        saved_row_number = str(row_idx)
                         break
             except ValueError:
                 saved_record_id = ""
@@ -185,6 +207,7 @@ def save_to_sheets(
         return {
             "sheet_name": sheet.title,
             "record_id": saved_record_id or record_id,
+            "row_number": saved_row_number,
         }
     except Exception as e:
         print(f"[save_to_sheets] error: {e}", flush=True)

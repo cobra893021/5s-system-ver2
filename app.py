@@ -661,9 +661,24 @@ def initialize_app() -> None:
         page_title="5S アドバイスシステム",
         page_icon="",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed" if should_hide_settings_panel() else "expanded",
     )
     st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
+    if should_hide_settings_panel():
+        st.markdown(
+            """
+            <style>
+            section[data-testid="stSidebar"] {
+              display: none !important;
+            }
+            button[kind="header"][aria-label*="sidebar"],
+            button[kind="header"][aria-label*="Sidebar"] {
+              display: none !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # ─── Gemini 初期化 ────────────────────────────────────────────────────────────────
@@ -821,6 +836,11 @@ def get_runtime_secret(name: str, default: str = "") -> str:
     except Exception:
         pass
     return os.getenv(name, default)
+
+
+def should_hide_settings_panel() -> bool:
+    raw = get_runtime_secret("HIDE_SETTINGS_PANEL", "")
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
 # ─── UI 描画：診断結果 ────────────────────────────────────────────────────────────
@@ -1197,6 +1217,12 @@ def render_diagnosis_results_fragment() -> None:
 
 # ─── サイドバー ──────────────────────────────────────────────────────────────────
 def render_sidebar() -> tuple[str, str, str]:
+    if should_hide_settings_panel():
+        api_key = get_runtime_secret("GEMINI_API_KEY", "")
+        model_name = get_runtime_secret("GEMINI_MODEL", "gemini-2.5-flash-lite")
+        detail_level = "標準"
+        return api_key, detail_level, model_name
+
     with st.sidebar:
         st.markdown("""
         <div style="padding:1.4rem 0 1rem;">
@@ -1559,7 +1585,9 @@ def main(mode: str | None = None):
                             _img_bytes = _buf.getvalue()
                             saved_info = save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
                             saved_targets.append(
-                                f"{fname_i} -> {saved_info.get('sheet_name', '')} / {saved_info.get('record_id', record_id)}"
+                                f"{fname_i} -> {saved_info.get('sheet_name', '')} / "
+                                f"row {saved_info.get('row_number', '?')} / "
+                                f"{saved_info.get('record_id', record_id)}"
                             )
                         except Exception as e:
                             print(f"[Google Sheets保存エラー] {e}", flush=True)
@@ -1587,7 +1615,7 @@ def main(mode: str | None = None):
                     "level": "success",
                     "message": "Google Sheets 保存先\n\n" + "\n".join(f"- {item}" for item in saved_targets),
                 }
-            elif any(res is not None for _, _, res in results):
+            elif any(res is not None for _, _, res in results) and not st.session_state.get("sheet_save_feedback"):
                 st.session_state["sheet_save_feedback"] = {
                     "level": "warning",
                     "message": "診断は完了しましたが、Google Sheets 保存先の確認情報を取得できませんでした。",
