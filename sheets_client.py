@@ -32,14 +32,21 @@ HEADERS = [
 
 
 def _get_secret(name: str, default: str = "") -> str:
-    if name in st.secrets:
-        value = st.secrets.get(name)
-        return "" if value is None else str(value)
+    try:
+        if name in st.secrets:
+            value = st.secrets.get(name)
+            return "" if value is None else str(value)
+    except Exception:
+        pass
     return os.getenv(name, default)
 
 
 def _get_credentials():
-    creds_json = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    creds_json = None
+    try:
+        creds_json = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    except Exception:
+        creds_json = None
     if creds_json:
         if isinstance(creds_json, str):
             info = json.loads(creds_json)
@@ -103,6 +110,8 @@ def _sheet_name_for_mode(mode: str) -> str:
 
 def _get_sheet(mode: str = "expert"):
     sheet_id = _get_secret("GOOGLE_SHEETS_ID", "")
+    if not sheet_id:
+        raise ValueError("GOOGLE_SHEETS_ID が設定されていません。")
     client = gspread.authorize(_get_credentials())
     return client.open_by_key(sheet_id).worksheet(_sheet_name_for_mode(mode))
 
@@ -120,7 +129,7 @@ def save_to_sheets(
     mode: str = "expert",
     company: str = "",
     image_bytes: bytes = b""
-) -> None:
+) -> dict[str, str]:
     """診断結果をGoogle Sheetsに1行追加する"""
     print(f"[save_to_sheets] start filename={filename!r}", flush=True)
     try:
@@ -160,9 +169,29 @@ def save_to_sheets(
             },
         )
         sheet.append_row(row, value_input_option="USER_ENTERED")
+        saved_record_id = ""
+        rows = sheet.get_all_values()
+        if rows:
+            headers = rows[0]
+            try:
+                record_id_col = headers.index("record_id")
+                for saved_row in reversed(rows[1:]):
+                    if len(saved_row) > record_id_col and saved_row[record_id_col] == record_id:
+                        saved_record_id = record_id
+                        break
+            except ValueError:
+                saved_record_id = ""
         print(f"[save_to_sheets] end OK filename={filename!r}", flush=True)
+        return {
+            "sheet_name": sheet.title,
+            "record_id": saved_record_id or record_id,
+        }
     except Exception as e:
         print(f"[save_to_sheets] error: {e}", flush=True)
+        raise RuntimeError(
+            f"Google Sheets 保存に失敗しました。"
+            f" mode={mode}, sheet={_sheet_name_for_mode(mode)}, filename={filename}, error={e}"
+        ) from e
 
 
 def get_confirmed_cases() -> list[dict[str, Any]]:

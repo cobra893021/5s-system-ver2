@@ -814,9 +814,12 @@ def get_app_mode(mode: str | None = None) -> str:
 
 
 def get_runtime_secret(name: str, default: str = "") -> str:
-    if name in st.secrets:
-        value = st.secrets.get(name)
-        return "" if value is None else str(value)
+    try:
+        if name in st.secrets:
+            value = st.secrets.get(name)
+            return "" if value is None else str(value)
+    except Exception:
+        pass
     return os.getenv(name, default)
 
 
@@ -1510,6 +1513,7 @@ def main(mode: str | None = None):
             if "results" in st.session_state:
                 del st.session_state["results"]
             results = []
+            saved_targets: list[str] = []
             diagnose_status = st.empty()
             diagnose_status.markdown(
                 '<p class="diagnose-progress-msg">分析を開始します...</p>',
@@ -1541,7 +1545,10 @@ def main(mode: str | None = None):
                             _buf = _io.BytesIO()
                             img.save(_buf, format="JPEG", quality=85)
                             _img_bytes = _buf.getvalue()
-                            save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
+                            saved_info = save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
+                            saved_targets.append(
+                                f"{fname_i} -> {saved_info.get('sheet_name', '')} / {saved_info.get('record_id', record_id)}"
+                            )
                         except Exception as e:
                             print(f"[Google Sheets保存エラー] {e}", flush=True)
                             st.warning(
@@ -1562,6 +1569,8 @@ def main(mode: str | None = None):
                 unsafe_allow_html=True,
             )
             progress.progress(1.0)
+            if saved_targets:
+                st.success("Google Sheets 保存先\n\n" + "\n".join(f"- {item}" for item in saved_targets))
             st.session_state["results"] = results
             st.session_state["selected_idx"] = 0
             st.rerun()
