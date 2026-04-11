@@ -1,0 +1,3 @@
+# 開発・回帰確認用（本番デプロイには必須ではない）
+-r requirements.txt
+pytest>=7.4.0

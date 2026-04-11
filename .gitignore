@@ -1,0 +1,10 @@
+.env
+credentials.json
+.venv/
+.cursor/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.streamlit/secrets.toml
