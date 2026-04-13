@@ -1,6 +1,7 @@
 """Google Sheets連携（診断結果の保存・確定事例の取得）"""
 from __future__ import annotations
 
+import base64
 import json
 import os
 from datetime import datetime, timezone
@@ -51,6 +52,11 @@ def _get_secret(name: str, default: str = "") -> str:
 
 
 def _get_credentials():
+    creds_b64 = _get_secret("GOOGLE_SERVICE_ACCOUNT_JSON_BASE64", "")
+    if creds_b64:
+        info = json.loads(base64.b64decode(creds_b64).decode("utf-8"))
+        return Credentials.from_service_account_info(info, scopes=SCOPES)
+
     creds_json = None
     try:
         creds_json = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
