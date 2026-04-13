@@ -1399,7 +1399,6 @@ def main(mode: str | None = None):
     st.session_state["app_mode"] = app_mode
     st.session_state.setdefault("gallery_images", [])
     st.session_state.setdefault("gallery_uploader_key", 0)
-    st.session_state.setdefault("sheet_save_feedback", None)
 
     api_key, detail_level, model_name = render_sidebar()
 
@@ -1429,17 +1428,6 @@ def main(mode: str | None = None):
     </div>
     """, unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
-
-    feedback = st.session_state.pop("sheet_save_feedback", None)
-    if feedback:
-        level = feedback.get("level", "info")
-        message = str(feedback.get("message", ""))
-        if level == "success":
-            st.success(message)
-        elif level == "warning":
-            st.warning(message)
-        else:
-            st.info(message)
 
     # APIキー確認
     if not api_key or api_key == "your_api_key_here":
@@ -1587,10 +1575,6 @@ def main(mode: str | None = None):
                             saved_count += 1
                         except Exception as e:
                             print(f"[Google Sheets保存エラー] {e}", flush=True)
-                            st.session_state["sheet_save_feedback"] = {
-                                "level": "warning",
-                                "message": "Google Sheets への保存に失敗しました。設定をご確認ください。",
-                            }
                         break
                     except Exception as e:
                         last_error = e
@@ -1606,16 +1590,6 @@ def main(mode: str | None = None):
                 unsafe_allow_html=True,
             )
             progress.progress(1.0)
-            if saved_count:
-                st.session_state["sheet_save_feedback"] = {
-                    "level": "success",
-                    "message": "Google Sheets に保存しました。",
-                }
-            elif any(res is not None for _, _, res in results) and not st.session_state.get("sheet_save_feedback"):
-                st.session_state["sheet_save_feedback"] = {
-                    "level": "warning",
-                    "message": "診断は完了しましたが、Google Sheets 保存先の確認情報を取得できませんでした。",
-                }
             st.session_state["results"] = results
             st.session_state["selected_idx"] = 0
             st.rerun()
