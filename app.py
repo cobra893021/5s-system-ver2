@@ -1551,7 +1551,7 @@ def main(mode: str | None = None):
             if "results" in st.session_state:
                 del st.session_state["results"]
             results = []
-            saved_targets: list[str] = []
+            saved_count = 0
             diagnose_status = st.empty()
             diagnose_status.markdown(
                 '<p class="diagnose-progress-msg">分析を開始します...</p>',
@@ -1583,17 +1583,13 @@ def main(mode: str | None = None):
                             _buf = _io.BytesIO()
                             img.save(_buf, format="JPEG", quality=85)
                             _img_bytes = _buf.getvalue()
-                            saved_info = save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
-                            saved_targets.append(
-                                f"{fname_i} -> {saved_info.get('sheet_name', '')} / "
-                                f"row {saved_info.get('row_number', '?')} / "
-                                f"{saved_info.get('record_id', record_id)}"
-                            )
+                            save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
+                            saved_count += 1
                         except Exception as e:
                             print(f"[Google Sheets保存エラー] {e}", flush=True)
                             st.session_state["sheet_save_feedback"] = {
                                 "level": "warning",
-                                "message": f"Google Sheets への保存に失敗しました（診断結果は画面に表示されます）。\n\n{e}",
+                                "message": "Google Sheets への保存に失敗しました。設定をご確認ください。",
                             }
                         break
                     except Exception as e:
@@ -1610,10 +1606,10 @@ def main(mode: str | None = None):
                 unsafe_allow_html=True,
             )
             progress.progress(1.0)
-            if saved_targets:
+            if saved_count:
                 st.session_state["sheet_save_feedback"] = {
                     "level": "success",
-                    "message": "Google Sheets 保存先\n\n" + "\n".join(f"- {item}" for item in saved_targets),
+                    "message": "Google Sheets に保存しました。",
                 }
             elif any(res is not None for _, _, res in results) and not st.session_state.get("sheet_save_feedback"):
                 st.session_state["sheet_save_feedback"] = {
