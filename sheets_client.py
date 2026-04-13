@@ -4,9 +4,11 @@ from __future__ import annotations
 import base64
 import json
 import os
-from datetime import datetime, timezone
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import gspread
 import streamlit as st
@@ -39,6 +41,9 @@ REQUIRED_SAVE_HEADERS = [
     "AI総評",
     "ステータス",
 ]
+
+JST = ZoneInfo("Asia/Tokyo")
+SAVE_RETRY_DELAYS = (0.8, 1.5, 2.5)
 
 
 def _get_secret(name: str, default: str = "") -> str:
@@ -145,6 +150,36 @@ def _ensure_required_headers(headers: list[str], required_headers: list[str]) ->
         )
 
 
+def _append_row_with_retry(sheet, row: list[Any]) -> None:
+    last_error: Exception | None = None
+    for attempt, delay in enumerate((0.0, *SAVE_RETRY_DELAYS), start=1):
+        try:
+            if delay:
+                time.sleep(delay)
+            sheet.append_row(row, value_input_option="USER_ENTERED")
+            return
+        except Exception as err:
+            last_error = err
+            print(f"[save_to_sheets] append retry {attempt} failed: {err}", flush=True)
+    if last_error is not None:
+        raise last_error
+
+
+def _fetch_rows_with_retry(sheet) -> list[list[str]]:
+    last_error: Exception | None = None
+    for attempt, delay in enumerate((0.0, *SAVE_RETRY_DELAYS), start=1):
+        try:
+            if delay:
+                time.sleep(delay)
+            return sheet.get_all_values()
+        except Exception as err:
+            last_error = err
+            print(f"[save_to_sheets] rows retry {attempt} failed: {err}", flush=True)
+    if last_error is not None:
+        raise last_error
+    return []
+
+
 def save_to_sheets(
     result: dict[str, Any],
     location: str,
@@ -168,7 +203,7 @@ def save_to_sheets(
         if len(actions_json) > 1900:
             actions_json = actions_json[:1900] + "…"
 
-        now = datetime.now(timezone.utc).strftime("%Y/%m/%d")
+        now = datetime.now(JST).strftime("%Y/%m/%d")
 
         image_formula = ""
         if image_bytes:
@@ -193,10 +228,10 @@ def save_to_sheets(
                 "診断士コメント": "",
             },
         )
-        sheet.append_row(row, value_input_option="USER_ENTERED")
+        _append_row_with_retry(sheet, row)
         saved_record_id = ""
         saved_row_number = ""
-        rows = sheet.get_all_values()
+        rows = _fetch_rows_with_retry(sheet)
         if rows:
             headers = rows[0]
             try:
