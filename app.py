@@ -1099,9 +1099,11 @@ def render_diagnosis_results_fragment() -> None:
                 if res is None:
                     continue
                 try:
+                    img_buf = io.BytesIO()
+                    img.save(img_buf, format="JPEG", quality=88)
                     pdf = generate_pdf(
                         result=res,
-                        image_bytes=b"",
+                        image_bytes=img_buf.getvalue(),
                         filename=fname,
                         company=st.session_state.get("main_company", ""),
                         location=st.session_state.get("main_location", ""),
