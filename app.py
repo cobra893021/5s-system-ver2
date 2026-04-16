@@ -1448,13 +1448,13 @@ def main(mode: str | None = None):
         col_company, col_location = st.columns(2)
         with col_company:
             company = st.text_input(
-                "会社名（任意）",
+                "会社名",
                 placeholder="例：株式会社〇〇",
                 key="main_company"
             )
         with col_location:
             location = st.text_input(
-                "診断場所（任意）",
+                "診断場所",
                 placeholder="例：製造ライン、倉庫",
                 key="main_location"
             )
@@ -1541,6 +1541,9 @@ def main(mode: str | None = None):
         )
 
         if diagnose:
+            if not company.strip() or not location.strip():
+                st.error("会社名と診断場所は必須です。入力してから診断してください。")
+                st.stop()
             if uploaded_files and len(uploaded_files) > MAX_IMAGES:
                 uploaded_files = uploaded_files[:MAX_IMAGES]
             st.session_state.pop("show_limit_warning", None)
