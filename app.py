@@ -1448,13 +1448,13 @@ def main(mode: str | None = None):
         col_company, col_location = st.columns(2)
         with col_company:
             company = st.text_input(
-                "会社名",
+                "会社名（必須）",
                 placeholder="例：株式会社〇〇",
                 key="main_company"
             )
         with col_location:
             location = st.text_input(
-                "診断場所",
+                "診断場所（必須）",
                 placeholder="例：製造ライン、倉庫",
                 key="main_location"
             )
