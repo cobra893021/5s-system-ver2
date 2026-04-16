@@ -1411,8 +1411,8 @@ def main(mode: str | None = None):
     api_key, detail_level, model_name = render_sidebar()
 
     # ヘッダー
-    hero_title = "5S アドバイスシステム" if app_mode == "expert" else "5S 診断システム"
-    hero_subtitle = "職場の5S状態をAIが診断し、具体的な改善アドバイスを提供します"
+    hero_title = "5S アドバイスシステム" if app_mode == "expert" else "5S 現場改善エンジン"
+    hero_subtitle = "写真1枚で、現場の課題と改善策が見える"
     mode_label = "カジコン用" if app_mode == "expert" else "会員用"
     st.markdown(
         f"""
