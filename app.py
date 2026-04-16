@@ -1095,15 +1095,21 @@ def render_diagnosis_results_fragment() -> None:
         st.markdown('<div class="list-panel-title">診断済みリスト</div>', unsafe_allow_html=True)
         def _bulk_download():
             reports = []
-            for fname, img, res in results:
+            gallery_items = st.session_state.get("gallery_images") or []
+            for idx, (fname, img, res) in enumerate(results):
                 if res is None:
                     continue
                 try:
-                    img_buf = io.BytesIO()
-                    img.save(img_buf, format="JPEG", quality=88)
+                    image_bytes = b""
+                    if idx < len(gallery_items):
+                        image_bytes = gallery_items[idx].get("data", b"") or b""
+                    if not image_bytes:
+                        img_buf = io.BytesIO()
+                        img.save(img_buf, format="JPEG", quality=88)
+                        image_bytes = img_buf.getvalue()
                     pdf = generate_pdf(
                         result=res,
-                        image_bytes=img_buf.getvalue(),
+                        image_bytes=image_bytes,
                         filename=fname,
                         company=st.session_state.get("main_company", ""),
                         location=st.session_state.get("main_location", ""),
