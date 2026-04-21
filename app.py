@@ -54,6 +54,49 @@ def _clear_gallery_and_diagnosis_state() -> None:
     st.query_params.pop("diag_sel", None)
 
 
+def _logout_member_user() -> None:
+    st.session_state.pop("member_auth", None)
+    st.session_state.pop("main_company", None)
+    st.session_state.pop("main_location", None)
+    _clear_gallery_and_diagnosis_state()
+
+
+def render_member_login() -> None:
+    st.markdown(
+        """
+        <div style="max-width:520px;margin:2.5rem auto 1.5rem;padding:2rem;background:#ffffff;
+                    border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 8px 32px rgba(52,109,153,0.08);">
+          <div style="font-size:1.35rem;font-weight:700;color:#346D99;margin-bottom:0.4rem;">会員ログイン</div>
+          <div style="color:#475569;font-size:0.95rem;line-height:1.7;">
+            発行されたログインIDとパスワードを入力してください。
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.form("member_login_form", clear_on_submit=False):
+        login_id = st.text_input("ログインID", key="member_login_id")
+        password = st.text_input("パスワード", type="password", key="member_login_password")
+        submitted = st.form_submit_button("ログイン", use_container_width=True)
+
+    if submitted:
+        try:
+            from sheets_client import authenticate_member_user
+
+            user = authenticate_member_user(login_id, password)
+            if not user:
+                st.error("ログインIDまたはパスワードが正しくありません。")
+                return
+
+            st.session_state["member_auth"] = user
+            st.session_state["main_company"] = user.get("company_name", "")
+            st.session_state["main_location"] = user.get("default_location", "")
+            st.rerun()
+        except Exception as e:
+            st.error(f"ログインに失敗しました: {e}")
+
+
 # ─── カスタム CSS ────────────────────────────────────────────────────────────────
 GLOBAL_CSS = """
 <style>
@@ -648,6 +691,123 @@ GLOBAL_CSS = """
       0 0 0 3px rgba(255,255,255,0.16),
       inset 0 1px 0 rgba(255,255,255,0.08) !important;
     transform: translateY(-1px) !important;
+  }
+
+  .mobile-file-pill {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .block-container {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+      padding-top: 1.2rem !important;
+    }
+
+    .hero-title {
+      font-size: 1.72rem;
+      line-height: 1.35;
+      margin-top: 0.4rem;
+    }
+
+    .hero-subtitle {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      margin-bottom: 1.2rem;
+    }
+
+    .mode-badge-wrap {
+      justify-content: center;
+      margin-bottom: 0.7rem;
+    }
+
+    .badge-row {
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .s-badge {
+      padding: 0.24rem 0.7rem;
+      font-size: 0.72rem;
+    }
+
+    [data-testid="stFileUploaderDropzone"] {
+      padding: 1.4rem 1rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] {
+      flex-direction: column !important;
+      gap: 0.65rem !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] > div {
+      width: 100% !important;
+      min-width: 100% !important;
+    }
+
+    .gallery-thumb-card,
+    .thumb-cell.empty {
+      display: none !important;
+    }
+
+    .mobile-file-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      width: 100%;
+      min-height: 44px;
+      padding: 0.72rem 0.9rem;
+      margin-bottom: 0.45rem;
+      border: 1.5px solid rgba(52,109,153,0.32);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.92);
+      color: var(--primary-dark);
+      font-size: 0.86rem;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(52,109,153,0.08);
+      box-sizing: border-box;
+    }
+
+    .mobile-file-pill .file-index {
+      flex: 0 0 auto;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .mobile-file-pill .file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .before-diagnosis-photo-frame {
+      height: 260px;
+    }
+
+    .card {
+      padding: 1rem;
+      border-radius: 16px;
+    }
+
+    .score-value {
+      font-size: 2.6rem;
+    }
+
+    .stButton > button,
+    .stDownloadButton > button,
+    .stDownloadButton button {
+      min-height: 44px;
+      font-size: 0.9rem;
+      padding: 0.62rem 1rem;
+    }
   }
 </style>
 """
@@ -1340,7 +1500,7 @@ div[data-testid="stVerticalBlock"]:has(img[alt^="gallery-del-anchor"])
                     del_anchor = html.escape(f"gallery-del-anchor-{item['id']}", quote=True)
                     st.markdown(
                         f"""
-<div style="position:relative;width:100%;border-radius:10px;overflow:hidden;border:2px solid #346D99;
+<div class="gallery-thumb-card" style="position:relative;width:100%;border-radius:10px;overflow:hidden;border:2px solid #346D99;
             box-shadow:0 2px 8px rgba(52,109,153,0.12);margin-bottom:4px;">
   <img src="data:image/jpeg;base64,{b64}" alt="{del_anchor}"
        style="width:100%;vertical-align:middle;display:block;aspect-ratio:4/3;object-fit:cover;background:#f8fafc;" />
@@ -1348,6 +1508,10 @@ div[data-testid="stVerticalBlock"]:has(img[alt^="gallery-del-anchor"])
               font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:999px;line-height:1.6;">{idx + 1}</div>
   <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(30,41,59,0.55);color:#fff;
               font-size:0.68rem;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{safe_lbl}</div>
+</div>
+<div class="mobile-file-pill">
+  <span class="file-index">{idx + 1}</span>
+  <span class="file-name">{safe_lbl}</span>
 </div>
 """,
                         unsafe_allow_html=True,
@@ -1437,6 +1601,18 @@ def main(mode: str | None = None):
     """, unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
+    if app_mode == "member":
+        member_auth = st.session_state.get("member_auth")
+        if not member_auth:
+            render_member_login()
+            return
+
+        action_col_l, action_col_r = st.columns([6, 1])
+        with action_col_r:
+            if st.button("ログアウト", key="member_logout_btn", use_container_width=True):
+                _logout_member_user()
+                st.rerun()
+
     # APIキー確認
     if not api_key or api_key == "your_api_key_here":
         st.warning("サイドバーに Gemini API キーを入力してください。\n\n"
@@ -1450,13 +1626,15 @@ def main(mode: str | None = None):
             company = st.text_input(
                 "会社名（必須）",
                 placeholder="例：株式会社〇〇",
-                key="main_company"
+                key="main_company",
+                value=st.session_state.get("main_company", ""),
             )
         with col_location:
             location = st.text_input(
                 "診断場所（必須）",
                 placeholder="例：製造ライン、倉庫",
-                key="main_location"
+                key="main_location",
+                value=st.session_state.get("main_location", ""),
             )
 
     # ─── 画像アップロード案内 ──────────────────────────────────────

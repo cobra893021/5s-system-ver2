@@ -136,6 +136,15 @@ def _get_sheet(mode: str = "expert"):
     return client.open_by_key(sheet_id).worksheet(_sheet_name_for_mode(mode))
 
 
+def _get_user_sheet():
+    sheet_id = _get_secret("GOOGLE_SHEETS_ID", "")
+    if not sheet_id:
+        raise ValueError("GOOGLE_SHEETS_ID が設定されていません。")
+    client = gspread.authorize(_get_credentials())
+    sheet_name = _get_secret("GOOGLE_USER_SHEET_NAME", "ユーザー管理")
+    return client.open_by_key(sheet_id).worksheet(sheet_name)
+
+
 def _row_from_headers(headers: list[str], values: dict[str, Any]) -> list[Any]:
     """シートのヘッダー順に合わせて1行データを組み立てる。"""
     return [values.get(header, "") for header in headers]
@@ -275,6 +284,30 @@ def get_confirmed_cases() -> list[dict[str, Any]]:
     except Exception as e:
         print(f"[get_confirmed_cases] error: {e}", flush=True)
         return []
+
+
+def authenticate_member_user(login_id: str, password: str) -> dict[str, str] | None:
+    """ユーザー管理シートで簡易ログインを照合する。"""
+    sheet = _get_user_sheet()
+    rows = sheet.get_all_records()
+    login_id = login_id.strip()
+    password = password.strip()
+
+    for row in rows:
+        row_login_id = str(row.get("login_id") or "").strip()
+        row_password = str(row.get("password") or "").strip()
+        status = str(row.get("利用状態") or "").strip()
+
+        if row_login_id == login_id and row_password == password:
+            if status != "有効":
+                raise ValueError("このアカウントは無効です。")
+            return {
+                "login_id": row_login_id,
+                "company_name": str(row.get("会社名") or "").strip(),
+                "default_location": str(row.get("診断場所") or "").strip(),
+            }
+
+    return None
 
 
 def update_expert_review(record_id: str, expert_comment: str, status: str | None = None) -> None:
