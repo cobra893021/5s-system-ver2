@@ -158,7 +158,7 @@ GLOBAL_CSS = """
     letter-spacing: 0.01em;
   }
 
-  .section-heading,
+  .report-download-heading,
   .score-detail-heading {
     color: #346D99;
     font-weight: 800;
@@ -170,16 +170,26 @@ GLOBAL_CSS = """
     margin-top: 2rem;
   }
 
-  .section-heading {
+  .report-download-heading {
     font-size: 1.3rem;
     margin-top: 1rem;
   }
 
+  .anchor-link,
+  a.anchor-link,
+  a[class*="anchor"],
+  [data-testid="stMarkdownContainer"] a[href^="#"],
   [data-testid="stMarkdownContainer"] h1 a,
   [data-testid="stMarkdownContainer"] h2 a,
   [data-testid="stMarkdownContainer"] h3 a,
   [data-testid="stMarkdownContainer"] h4 a {
     display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
   }
   .hero-subtitle {
     text-align: center;
@@ -424,16 +434,20 @@ GLOBAL_CSS = """
   }
 
   /* ─── エクスパンダー（5S詳細項目用） ─── */
-  div[data-testid="stExpander"] {
+  div[data-testid="stExpander"],
+  div[data-testid="stExpander"] > div,
+  div[data-testid="stExpander"] details {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
+    outline: none !important;
   }
 
   details {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
+    outline: none !important;
   }
 
   details > summary {
@@ -748,14 +762,14 @@ GLOBAL_CSS = """
       white-space: nowrap;
     }
 
-    .section-heading,
+    .report-download-heading,
     .score-detail-heading {
       white-space: nowrap;
       line-height: 1.25;
       letter-spacing: -0.02em;
     }
 
-    .section-heading {
+    .report-download-heading {
       font-size: clamp(1.05rem, 5.1vw, 1.24rem);
     }
 
@@ -799,10 +813,13 @@ GLOBAL_CSS = """
     }
 
     div[data-testid="stExpander"],
+    div[data-testid="stExpander"] > div,
+    div[data-testid="stExpander"] details,
     details {
       border: none !important;
       box-shadow: none !important;
       background: transparent !important;
+      outline: none !important;
     }
 
     details > summary {
@@ -1181,7 +1198,7 @@ def render_results(result: dict, img, mode: str = "expert"):
     # ── PDF編集・DLセクション ──
     st.markdown("---")
     st.markdown(
-        "<h3 class='section-heading'>"
+        "<h3 class='report-download-heading'>"
         "レポート作成・ダウンロード</h3>",
         unsafe_allow_html=True
     )
