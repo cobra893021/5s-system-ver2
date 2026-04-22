@@ -157,6 +157,30 @@ GLOBAL_CSS = """
     margin-bottom: 0.4rem;
     letter-spacing: 0.01em;
   }
+
+  .section-heading,
+  .score-detail-heading {
+    color: #346D99;
+    font-weight: 800;
+    margin-bottom: 1rem;
+  }
+
+  .score-detail-heading {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+  }
+
+  .section-heading {
+    font-size: 1.3rem;
+    margin-top: 1rem;
+  }
+
+  [data-testid="stMarkdownContainer"] h1 a,
+  [data-testid="stMarkdownContainer"] h2 a,
+  [data-testid="stMarkdownContainer"] h3 a,
+  [data-testid="stMarkdownContainer"] h4 a {
+    display: none !important;
+  }
   .hero-subtitle {
     text-align: center;
     color: var(--text-sub);
@@ -400,6 +424,18 @@ GLOBAL_CSS = """
   }
 
   /* ─── エクスパンダー（5S詳細項目用） ─── */
+  div[data-testid="stExpander"] {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  details {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
   details > summary {
     background-color: white !important;
     border: 1px solid var(--border) !important;
@@ -705,9 +741,26 @@ GLOBAL_CSS = """
     }
 
     .hero-title {
-      font-size: 1.72rem;
-      line-height: 1.35;
+      font-size: clamp(1.34rem, 7vw, 1.72rem);
+      line-height: 1.2;
       margin-top: 0.4rem;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+    }
+
+    .section-heading,
+    .score-detail-heading {
+      white-space: nowrap;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .section-heading {
+      font-size: clamp(1.05rem, 5.1vw, 1.24rem);
+    }
+
+    .score-detail-heading {
+      font-size: clamp(1.05rem, 5.2vw, 1.28rem);
     }
 
     .hero-subtitle {
@@ -743,6 +796,18 @@ GLOBAL_CSS = """
     div[data-testid="stHorizontalBlock"] > div {
       width: 100% !important;
       min-width: 100% !important;
+    }
+
+    div[data-testid="stExpander"],
+    details {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    details > summary {
+      padding: 0.72rem 0.9rem !important;
+      font-size: clamp(0.92rem, 4.1vw, 1rem) !important;
     }
 
     .gallery-thumb-card,
@@ -1081,7 +1146,7 @@ def render_results(result: dict, img, mode: str = "expert"):
     # 2S 各項目のみ表示
     s_keys = ["seiri", "seiton"]
 
-    st.markdown("<h3 style='color:#346D99; font-weight:800; font-size:1.3rem; margin-top:2rem; margin-bottom:1rem;'>2S 診断スコア詳細</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 class='score-detail-heading'>2S 診断スコア詳細</h3>", unsafe_allow_html=True)
     for key in s_keys:
         item = result.get(key, {})
         score = item.get("score", 0)
@@ -1116,7 +1181,7 @@ def render_results(result: dict, img, mode: str = "expert"):
     # ── PDF編集・DLセクション ──
     st.markdown("---")
     st.markdown(
-        "<h3 style='color:#346D99; margin-top:1rem; margin-bottom:0.5rem;'>"
+        "<h3 class='section-heading'>"
         "レポート作成・ダウンロード</h3>",
         unsafe_allow_html=True
     )
