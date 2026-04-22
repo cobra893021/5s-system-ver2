@@ -61,6 +61,12 @@ def _logout_member_user() -> None:
     _clear_gallery_and_diagnosis_state()
 
 
+def is_member_login_disabled() -> bool:
+    """確認作業中だけ会員ログイン画面を迂回するための切り替え。"""
+    value = get_runtime_secret("DISABLE_MEMBER_LOGIN", "")
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
 def render_member_login() -> None:
     st.markdown(
         """
@@ -1683,7 +1689,7 @@ def main(mode: str | None = None):
     """, unsafe_allow_html=True)
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
-    if app_mode == "member":
+    if app_mode == "member" and not is_member_login_disabled():
         member_auth = st.session_state.get("member_auth")
         if not member_auth:
             render_member_login()
