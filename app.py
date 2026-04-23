@@ -94,15 +94,12 @@ def render_member_login() -> None:
     with side_r:
         st.empty()
     with center_col:
-        st.markdown("<div class='member-login-card'>", unsafe_allow_html=True)
         st.markdown("<div class='member-login-card-title'>会員ログイン</div>", unsafe_allow_html=True)
 
         with st.form("member_login_form", clear_on_submit=False):
             login_id = st.text_input("アドレス", placeholder="メールアドレスを入力", key="member_login_id")
             password = st.text_input("パスワード", type="password", placeholder="ログインパスを入力", key="member_login_password")
             submitted = st.form_submit_button("ログイン", use_container_width=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     if submitted:
