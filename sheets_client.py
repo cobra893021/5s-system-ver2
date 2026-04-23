@@ -46,6 +46,23 @@ JST = ZoneInfo("Asia/Tokyo")
 SAVE_RETRY_DELAYS = (0.8, 1.5, 2.5)
 
 
+def _score_to_grade(score: int | float | str | None) -> str:
+    try:
+        score_num = int(float(score or 0))
+    except (TypeError, ValueError):
+        return str(score or "").strip().upper()
+
+    if score_num >= 85:
+        return "A"
+    if score_num >= 70:
+        return "B"
+    if score_num >= 55:
+        return "C"
+    if score_num >= 40:
+        return "D"
+    return "E"
+
+
 def _get_secret(name: str, default: str = "") -> str:
     try:
         if name in st.secrets:
@@ -207,6 +224,7 @@ def save_to_sheets(
         scene = str(result.get("scene_category") or "other")
         summary = str(result.get("summary") or "")
         score = result.get("overall_score", 0)
+        grade = _score_to_grade(score)
         actions = result.get("action_items") or []
         actions_json = json.dumps(actions, ensure_ascii=False)
         if len(actions_json) > 1900:
@@ -231,7 +249,7 @@ def save_to_sheets(
                 "画像名": filename,
                 "画像": image_formula,
                 "AI改善アクション": actions_json,
-                "AI総合スコア": score,
+                "AI総合スコア": grade,
                 "AI総評": summary,
                 "ステータス": "AI診断済み",
                 "診断士コメント": "",
@@ -277,7 +295,7 @@ def get_confirmed_cases() -> list[dict[str, Any]]:
             if row.get("ステータス") == "確定":
                 out.append({
                     "場所カテゴリ": str(row.get("場所カテゴリ") or ""),
-                    "AI総合スコア": int(row.get("AI総合スコア") or 0),
+                    "AI総合スコア": _score_to_grade(row.get("AI総合スコア") or ""),
                     "診断士コメント": str(row.get("診断士コメント") or ""),
                 })
         return out
