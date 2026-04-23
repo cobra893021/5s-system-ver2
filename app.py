@@ -28,6 +28,13 @@ def pil_image_to_b64_jpeg(
     return base64.b64encode(buf.getvalue()).decode()
 
 
+def pil_image_to_jpeg_bytes(pil_img: Image.Image, quality: int = 88) -> bytes:
+    """PDF・Sheets・Drive保存で共通利用するJPEGバイト列を作る。"""
+    buf = io.BytesIO()
+    pil_img.convert("RGB").save(buf, format="JPEG", quality=quality)
+    return buf.getvalue()
+
+
 def _gallery_item_key(item: dict[str, Any]) -> tuple[str, str]:
     """同名・同サイズの別ファイルを区別するため (名前, digest) でキー化する。"""
     if item.get("digest"):
@@ -1134,9 +1141,7 @@ def render_results(result: dict, img, mode: str = "expert"):
 </div>
 """, unsafe_allow_html=True)
 
-    _jpeg_buf = io.BytesIO()
-    img.save(_jpeg_buf, format="JPEG", quality=88)
-    _current_img_bytes = _jpeg_buf.getvalue()
+    _current_img_bytes = result.get("_pdf_image_bytes") or pil_image_to_jpeg_bytes(img, quality=88)
     img_fname = st.session_state.get("current_report_fname", "")
     current_record_id = str(result.get("_record_id") or "")
 
@@ -1348,13 +1353,11 @@ def render_diagnosis_results_fragment() -> None:
                 if res is None:
                     continue
                 try:
-                    image_bytes = b""
-                    if idx < len(gallery_items):
+                    image_bytes = res.get("_pdf_image_bytes") or b""
+                    if not image_bytes and idx < len(gallery_items):
                         image_bytes = gallery_items[idx].get("data", b"") or b""
                     if not image_bytes:
-                        img_buf = io.BytesIO()
-                        img.save(img_buf, format="JPEG", quality=88)
-                        image_bytes = img_buf.getvalue()
+                        image_bytes = pil_image_to_jpeg_bytes(img, quality=88)
                     pdf = generate_pdf(
                         result=res,
                         image_bytes=image_bytes,
@@ -1838,17 +1841,14 @@ def main(mode: str | None = None):
                     try:
                         res = analyze_image(model, img, location)
                         record_id = generate_record_id()
+                        image_bytes = pil_image_to_jpeg_bytes(img, quality=88)
                         res["_record_id"] = record_id
+                        res["_pdf_image_bytes"] = image_bytes
                         results.append((fname_i, img, res))
                         try:
                             from sheets_client import save_to_sheets
 
-                            # PIL画像をJPEGバイト列に変換してから渡す
-                            import io as _io
-                            _buf = _io.BytesIO()
-                            img.save(_buf, format="JPEG", quality=85)
-                            _img_bytes = _buf.getvalue()
-                            save_to_sheets(res, location, fname_i, record_id, app_mode, company, _img_bytes)
+                            save_to_sheets(res, location, fname_i, record_id, app_mode, company, image_bytes)
                             saved_count += 1
                         except Exception as e:
                             print(f"[Google Sheets保存エラー] {e}", flush=True)
