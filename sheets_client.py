@@ -130,7 +130,8 @@ def _upload_to_drive(image_bytes: bytes, filename: str) -> str:
             body={"type": "anyone", "role": "reader"}
         ).execute()
 
-        image_url = f"https://drive.google.com/uc?id={file_id}"
+        # Google Sheets の IMAGE() は export=view 付きのほうが安定して表示されやすい
+        image_url = f"https://drive.google.com/uc?export=view&id={file_id}"
         print(f"[upload_to_drive] OK url={image_url}", flush=True)
         return image_url
 
