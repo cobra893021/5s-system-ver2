@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 import google.generativeai as genai
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageOps
 from dotenv import load_dotenv
 from knowledge import get_knowledge_context
 from pdf_report import generate_pdf, generate_zip
@@ -33,6 +33,17 @@ def pil_image_to_jpeg_bytes(pil_img: Image.Image, quality: int = 88) -> bytes:
     buf = io.BytesIO()
     pil_img.convert("RGB").save(buf, format="JPEG", quality=quality)
     return buf.getvalue()
+
+
+def load_uploaded_image(data: bytes) -> Image.Image:
+    """スマホ写真のExif向きを反映して、見た目通りのRGB画像として読み込む。"""
+    with Image.open(io.BytesIO(data)) as img:
+        return ImageOps.exif_transpose(img).convert("RGB")
+
+
+def normalize_uploaded_image_bytes(data: bytes, quality: int = 92) -> bytes:
+    """アップロード画像を向き補正済みJPEGに統一する。"""
+    return pil_image_to_jpeg_bytes(load_uploaded_image(data), quality=quality)
 
 
 def _gallery_item_key(item: dict[str, Any]) -> tuple[str, str]:
@@ -1609,7 +1620,7 @@ div[data-testid="stVerticalBlock"]:has(img[alt^="gallery-del-anchor"])
     gallery = st.session_state.get("gallery_images", [])
     n = len(gallery)
     if n:
-        images = [Image.open(io.BytesIO(x["data"])).convert("RGB") for x in gallery]
+        images = [load_uploaded_image(x["data"]) for x in gallery]
     else:
         images = []
 
@@ -1828,11 +1839,12 @@ def main(mode: str | None = None):
             for name, dig, data in upload_entries:
                 key = (name, dig)
                 if key not in existing_keys and len(st.session_state.gallery_images) < MAX_IMAGES:
+                    normalized_data = normalize_uploaded_image_bytes(data)
                     st.session_state.gallery_images.append(
                         {
                             "id": str(uuid.uuid4()),
                             "name": name,
-                            "data": data,
+                            "data": normalized_data,
                             "digest": dig,
                         }
                     )
@@ -1841,7 +1853,7 @@ def main(mode: str | None = None):
     gallery = st.session_state.gallery_images
     n = len(gallery)
     if n:
-        images = [Image.open(io.BytesIO(x["data"])).convert("RGB") for x in gallery]
+        images = [load_uploaded_image(x["data"]) for x in gallery]
     else:
         images = []
 
