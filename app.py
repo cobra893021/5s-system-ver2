@@ -1283,8 +1283,6 @@ def render_results(result: dict, img, mode: str = "expert"):
             </div>
             """, unsafe_allow_html=True)
 
-    render_2s_video_links()
-
     # ── PDF編集・DLセクション ──
     st.markdown("---")
     st.markdown(
