@@ -1146,7 +1146,7 @@ def render_results(result: dict, img, mode: str = "expert"):
 <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
   <div class="card" style="text-align:center; margin-bottom: 1rem;">
     <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:0.4rem;letter-spacing:0.06em;">TOTAL GRADE</div>
-    <div style="color:{grade_color};font-size:3rem;font-weight:800;line-height:1;margin:0.35rem 0;">Grade {grade}</div>
+    <div style="color:{grade_color};font-size:4rem;font-weight:800;line-height:1;margin:0.45rem 0;text-align:center;">{grade}</div>
   </div>
   
   <div class="card" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">

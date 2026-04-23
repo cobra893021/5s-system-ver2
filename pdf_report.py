@@ -138,8 +138,8 @@ def generate_pdf(
 
     grade_content = [
         [Paragraph("TOTAL GRADE", s['small'])],
-        [Paragraph(f"Grade  {grade}", ParagraphStyle(
-            'grade', fontName=FONT, fontSize=14,
+        [Paragraph(grade, ParagraphStyle(
+            'grade', fontName=FONT, fontSize=32, leading=36,
             textColor=grade_color, alignment=1
         ))],
     ]
