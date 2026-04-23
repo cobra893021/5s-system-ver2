@@ -287,18 +287,27 @@ def get_confirmed_cases() -> list[dict[str, Any]]:
 
 
 def authenticate_member_user(login_id: str, password: str) -> dict[str, str] | None:
-    """ユーザー管理シートで簡易ログインを照合する。"""
+    """ユーザー管理シートで会員ログインを照合する。"""
     sheet = _get_user_sheet()
     rows = sheet.get_all_records()
     login_id = login_id.strip()
     password = password.strip()
 
     for row in rows:
-        row_login_id = str(row.get("login_id") or "").strip()
-        row_password = str(row.get("password") or "").strip()
+        row_login_id = str(
+            row.get("メールアドレス")
+            or row.get("email")
+            or row.get("login_id")
+            or ""
+        ).strip()
+        row_password = str(
+            row.get("ログインパス")
+            or row.get("password")
+            or ""
+        ).strip()
         status = str(row.get("利用状態") or "").strip()
 
-        if row_login_id == login_id and row_password == password:
+        if row_login_id.lower() == login_id.lower() and row_password == password:
             if status != "有効":
                 raise ValueError("このアカウントは無効です。")
             return {

@@ -81,7 +81,7 @@ def render_member_login() -> None:
                     border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 8px 32px rgba(52,109,153,0.08);">
           <div style="font-size:1.35rem;font-weight:700;color:#346D99;margin-bottom:0.4rem;">会員ログイン</div>
           <div style="color:#475569;font-size:0.95rem;line-height:1.7;">
-            発行されたログインIDとパスワードを入力してください。
+            登録したメールアドレスと発行されたログインパスを入力してください。
           </div>
         </div>
         """,
@@ -89,8 +89,8 @@ def render_member_login() -> None:
     )
 
     with st.form("member_login_form", clear_on_submit=False):
-        login_id = st.text_input("ログインID", key="member_login_id")
-        password = st.text_input("パスワード", type="password", key="member_login_password")
+        login_id = st.text_input("メールアドレス", key="member_login_id")
+        password = st.text_input("ログインパス", type="password", key="member_login_password")
         submitted = st.form_submit_button("ログイン", use_container_width=True)
 
     if submitted:
@@ -99,7 +99,7 @@ def render_member_login() -> None:
 
             user = authenticate_member_user(login_id, password)
             if not user:
-                st.error("ログインIDまたはパスワードが正しくありません。")
+                st.error("メールアドレスまたはログインパスが正しくありません。")
                 return
 
             st.session_state["member_auth"] = user
