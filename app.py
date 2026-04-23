@@ -142,6 +142,17 @@ GLOBAL_CSS = """
     color: var(--text);
   }
 
+  #MainMenu,
+  header[data-testid="stHeader"],
+  div[data-testid="stToolbar"],
+  div[data-testid="stDecoration"],
+  div[data-testid="viewerBadge"],
+  div[data-testid="stStatusWidget"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+  }
+
   /* ─── 背景 ─── */
   .stApp {
     background-color: var(--bg);
