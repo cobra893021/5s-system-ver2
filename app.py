@@ -1052,7 +1052,7 @@ def score_to_grade(score: int) -> tuple[str, str]:
 
 def render_grade_popover() -> None:
     """Grade判定基準を必要な時だけ確認できるようにする。"""
-    with st.popover("Grade評価について?", use_container_width=True):
+    with st.popover("Grade評価について", use_container_width=True):
         st.markdown(
             "AIが内部的に算出した診断結果を、利用者に説明しやすい5段階のGradeに変換しています。"
         )
@@ -1751,14 +1751,23 @@ def main(mode: str | None = None):
             )
 
     # ─── 画像アップロード案内 ──────────────────────────────────────
-    st.markdown("""
+    heic_guide_url = get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
+    heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
+    heic_notice_html = (
+        f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
+        f'rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">'
+        f'{heic_notice}</a>'
+        if heic_guide_url
+        else f'<span style="color:#dc2626; font-weight:800;">{heic_notice}</span>'
+    )
+    st.markdown(f"""
     <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
         <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード</div>
-        <ul style="color:#475569; font-size:0.9rem; margin:0; padding-left:1.2rem; line-height:1.6;">
-            <li>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</li>
-            <li>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></li>
-            <li>一度にアップロードできる枚数上限：<b>最大 10 枚</b></li>
-        </ul>
+        <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+            <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+            <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b>　一度にアップロードできる枚数上限：<b>最大 10 枚</b></div>
+            <div style="margin-top:0.35rem;">{heic_notice_html}</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
