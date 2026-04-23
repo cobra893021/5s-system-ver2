@@ -86,7 +86,6 @@ def is_member_login_disabled() -> bool:
 
 
 def render_member_login() -> None:
-    st.markdown("<div class='member-login-shell'>", unsafe_allow_html=True)
     st.markdown("<div class='member-login-page-title'>5S現場改善エンジン</div>", unsafe_allow_html=True)
     side_l, center_col, side_r = st.columns([1, 1.35, 1])
     with side_l:
@@ -94,15 +93,12 @@ def render_member_login() -> None:
     with side_r:
         st.empty()
     with center_col:
-        st.markdown("<div class='member-login-card'>", unsafe_allow_html=True)
         st.markdown("<div class='member-login-card-title'>会員ログイン</div>", unsafe_allow_html=True)
 
         with st.form("member_login_form", clear_on_submit=False):
             login_id = st.text_input("アドレス", placeholder="メールアドレスを入力", key="member_login_id")
             password = st.text_input("パスワード", type="password", placeholder="ログインパスを入力", key="member_login_password")
             submitted = st.form_submit_button("ログイン", use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if submitted:
         try:
@@ -254,11 +250,6 @@ GLOBAL_CSS = """
     box-shadow: 0 8px 18px rgba(52,109,153,0.08);
   }
 
-  .member-login-shell {
-    min-height: auto;
-    padding-top: 1rem;
-  }
-
   .member-login-page-title {
     font-family: 'Shippori Mincho B1', 'Noto Serif JP', serif;
     font-size: 2.4rem;
@@ -269,14 +260,6 @@ GLOBAL_CSS = """
     letter-spacing: -0.01em;
   }
 
-  .member-login-card {
-    background: rgba(255,255,255,0.97);
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 10px 28px rgba(52,109,153,0.08);
-    padding: 2rem 2rem 1.35rem 2rem;
-  }
-
   .member-login-card-title {
     text-align: center;
     color: #346D99;
@@ -285,20 +268,29 @@ GLOBAL_CSS = """
     margin-bottom: 1.35rem;
   }
 
-  .member-login-card div[data-testid="stForm"] {
+  div[data-testid="stForm"] {
+    background: rgba(255,255,255,0.97) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 28px rgba(52,109,153,0.08) !important;
+    padding: 2rem 2rem 1.35rem 2rem !important;
+    max-width: 100% !important;
+  }
+
+  div[data-testid="stForm"] form {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
   }
 
-  .member-login-card label[data-testid="stWidgetLabel"] p {
+  div[data-testid="stForm"] label[data-testid="stWidgetLabel"] p {
     color: #334155 !important;
     font-size: 1rem !important;
     font-weight: 700 !important;
     margin-bottom: 0.22rem !important;
   }
 
-  .member-login-card div[data-baseweb="input"] {
+  div[data-testid="stForm"] div[data-baseweb="input"] {
     min-height: 54px;
     border-radius: 12px !important;
     border: 1px solid #dbe4ee !important;
@@ -306,16 +298,16 @@ GLOBAL_CSS = """
     box-shadow: none !important;
   }
 
-  .member-login-card div[data-baseweb="input"]:focus-within {
+  div[data-testid="stForm"] div[data-baseweb="input"]:focus-within {
     border-color: #86abc9 !important;
     box-shadow: 0 0 0 3px rgba(52,109,153,0.11) !important;
   }
 
-  .member-login-card input {
+  div[data-testid="stForm"] input {
     font-size: 0.98rem !important;
   }
 
-  .member-login-card div[data-testid="stFormSubmitButton"] > button {
+  div[data-testid="stFormSubmitButton"] > button {
     background-color: #346D99 !important;
     background-image: none !important;
     color: #ffffff !important;
@@ -328,8 +320,8 @@ GLOBAL_CSS = """
     box-shadow: none !important;
   }
 
-  .member-login-card div[data-testid="stFormSubmitButton"] > button:hover,
-  .member-login-card div[data-testid="stFormSubmitButton"] > button:focus {
+  div[data-testid="stFormSubmitButton"] > button:hover,
+  div[data-testid="stFormSubmitButton"] > button:focus {
     background-color: #2b5d85 !important;
     background-image: none !important;
     color: #ffffff !important;
@@ -917,25 +909,20 @@ GLOBAL_CSS = """
       font-size: 0.72rem;
     }
 
-    .member-login-shell {
-      min-height: auto;
-      padding-top: 0.2rem;
-    }
-
     .member-login-page-title {
       font-size: 2rem;
       margin-bottom: 0.95rem;
       white-space: nowrap;
     }
 
-    .member-login-card {
-      border-radius: 18px;
-      padding: 1.35rem 1.1rem 0.95rem 1.1rem;
-    }
-
     .member-login-card-title {
       font-size: 1.55rem;
       margin-bottom: 1rem;
+    }
+
+    div[data-testid="stForm"] {
+      border-radius: 18px !important;
+      padding: 1.35rem 1.1rem 0.95rem 1.1rem !important;
     }
 
     [data-testid="stFileUploaderDropzone"] {
