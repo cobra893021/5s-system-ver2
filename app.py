@@ -1142,6 +1142,37 @@ def should_hide_settings_panel() -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def get_2s_video_urls() -> tuple[str, str]:
+    return (
+        get_runtime_secret("SEIRI_VIDEO_URL", "").strip(),
+        get_runtime_secret("SEITON_VIDEO_URL", "").strip(),
+    )
+
+
+def render_2s_video_links() -> None:
+    seiri_url, seiton_url = get_2s_video_urls()
+    if not seiri_url and not seiton_url:
+        return
+
+    st.markdown(
+        "<h3 style='color:#346D99; margin-top:1.5rem; margin-bottom:0.5rem;'>"
+        "2S（整理・整頓）について</h3>",
+        unsafe_allow_html=True,
+    )
+    if seiri_url:
+        safe_url = html.escape(seiri_url, quote=True)
+        st.markdown(
+            f"・[整理についての動画を見る]({safe_url})",
+            unsafe_allow_html=False,
+        )
+    if seiton_url:
+        safe_url = html.escape(seiton_url, quote=True)
+        st.markdown(
+            f"・[整頓についての動画を見る]({safe_url})",
+            unsafe_allow_html=False,
+        )
+
+
 # ─── UI 描画：診断結果 ────────────────────────────────────────────────────────────
 def render_results(result: dict, img, mode: str = "expert"):
     st.markdown("---")
@@ -1187,6 +1218,7 @@ def render_results(result: dict, img, mode: str = "expert"):
     _current_img_bytes = result.get("_pdf_image_bytes") or pil_image_to_jpeg_bytes(img, quality=88)
     img_fname = st.session_state.get("current_report_fname", "")
     current_record_id = str(result.get("_record_id") or "")
+    seiri_video_url, seiton_video_url = get_2s_video_urls()
 
     # 総評の右下に個別DLボタン
     spacer_col, button_col = st.columns([3, 2], gap="small")
@@ -1200,6 +1232,8 @@ def render_results(result: dict, img, mode: str = "expert"):
                 location=st.session_state.get("main_location", ""),
                 edited_summary="",
                 edited_actions=[],
+                seiri_video_url=seiri_video_url,
+                seiton_video_url=seiton_video_url,
             )
             st.download_button(
                 label="個別で診断結果をダウンロード",
@@ -1248,6 +1282,8 @@ def render_results(result: dict, img, mode: str = "expert"):
               <div style="color:#1e293b;font-size:0.94rem;line-height:1.6;">{action}</div>
             </div>
             """, unsafe_allow_html=True)
+
+    render_2s_video_links()
 
     # ── PDF編集・DLセクション ──
     st.markdown("---")
@@ -1344,6 +1380,8 @@ def render_results(result: dict, img, mode: str = "expert"):
                 location=st.session_state.get("main_location", ""),
                 edited_summary=edited_summary if 'edited_summary' in dir() else "",
                 edited_actions=edited_actions if 'edited_actions' in dir() else [],
+                seiri_video_url=seiri_video_url,
+                seiton_video_url=seiton_video_url,
             )
             st.download_button(
                 label="個別で診断結果をダウンロード",
@@ -1407,6 +1445,8 @@ def render_diagnosis_results_fragment() -> None:
                         filename=fname,
                         company=st.session_state.get("main_company", ""),
                         location=st.session_state.get("main_location", ""),
+                        seiri_video_url=get_2s_video_urls()[0],
+                        seiton_video_url=get_2s_video_urls()[1],
                     )
                     reports.append((fname, pdf))
                 except Exception:

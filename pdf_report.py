@@ -96,6 +96,8 @@ def generate_pdf(
     location: str = "",
     edited_summary: str = "",
     edited_actions: list[str] = None,
+    seiri_video_url: str = "",
+    seiton_video_url: str = "",
 ) -> bytes:
     """診断結果からA4 PDFを生成してbytesで返す"""
     safe_title = (filename or "5S診断レポート").rsplit(".", 1)[0]
@@ -221,6 +223,24 @@ def generate_pdf(
             ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ]))
         story.append(action_row)
+
+    if seiri_video_url or seiton_video_url:
+        story.append(Spacer(1, 6))
+        story.append(Paragraph("■ 2S（整理・整頓）について", s['section']))
+        link_style = ParagraphStyle(
+            'video_link', fontName=FONT, fontSize=8,
+            textColor=PRIMARY, leading=14, spaceAfter=3
+        )
+        if seiri_video_url:
+            story.append(Paragraph(
+                f'・<link href="{seiri_video_url}">整理についての動画を見る</link>',
+                link_style,
+            ))
+        if seiton_video_url:
+            story.append(Paragraph(
+                f'・<link href="{seiton_video_url}">整頓についての動画を見る</link>',
+                link_style,
+            ))
 
     # ── フッター ──
     story.append(Spacer(1, 8))
