@@ -314,7 +314,8 @@ GLOBAL_CSS = """
   }
 
   .member-login-card div[data-testid="stFormSubmitButton"] > button {
-    background: #346D99 !important;
+    background-color: #346D99 !important;
+    background-image: none !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 12px !important;
@@ -327,7 +328,8 @@ GLOBAL_CSS = """
 
   .member-login-card div[data-testid="stFormSubmitButton"] > button:hover,
   .member-login-card div[data-testid="stFormSubmitButton"] > button:focus {
-    background: #2b5d85 !important;
+    background-color: #2b5d85 !important;
+    background-image: none !important;
     color: #ffffff !important;
     border: none !important;
     box-shadow: 0 10px 20px rgba(52,109,153,0.16) !important;
