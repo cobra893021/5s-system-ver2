@@ -173,19 +173,19 @@ GLOBAL_CSS = """
 
   .report-download-heading,
   .score-detail-heading {
-    color: #346D99;
-    font-weight: 800;
-    margin-bottom: 1rem;
+    color: #346D99 !important;
+    font-weight: 800 !important;
+    margin-bottom: 1rem !important;
   }
 
   .score-detail-heading {
-    font-size: 1.3rem;
-    margin-top: 2rem;
+    font-size: 1.3rem !important;
+    margin-top: 2rem !important;
   }
 
   .report-download-heading {
-    font-size: 1.3rem;
-    margin-top: 1rem;
+    font-size: 1.3rem !important;
+    margin-top: 1rem !important;
   }
 
   .anchor-link,
@@ -1050,9 +1050,9 @@ def score_to_grade(score: int) -> tuple[str, str]:
     return "E", "#ef4444"
 
 
-def render_grade_popover() -> None:
-    """Grade判定基準を必要な時だけ確認できるようにする。"""
-    with st.popover("Grade評価について", use_container_width=True):
+def render_grade_details() -> None:
+    """Grade判定基準を2S詳細と同じ開閉UIで確認できるようにする。"""
+    with st.expander("＞ Grade評価について", expanded=False):
         st.markdown(
             "AIが内部的に算出した診断結果を、利用者に説明しやすい5段階のGradeに変換しています。"
         )
@@ -1157,7 +1157,7 @@ def render_results(result: dict, img, mode: str = "expert"):
   </div>
 </div>
 """, unsafe_allow_html=True)
-        render_grade_popover()
+        render_grade_details()
 
     _current_img_bytes = result.get("_pdf_image_bytes") or pil_image_to_jpeg_bytes(img, quality=88)
     img_fname = st.session_state.get("current_report_fname", "")
