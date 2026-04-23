@@ -1052,12 +1052,15 @@ def score_to_grade(score: int) -> tuple[str, str]:
 
 def render_grade_details() -> None:
     """Grade判定基準を2S詳細と同じ開閉UIで確認できるようにする。"""
-    with st.expander("＞ Grade評価について", expanded=False):
-        st.markdown(
-            "AIが内部的に算出した診断結果を、利用者に説明しやすい5段階のGradeに変換しています。"
-        )
+    with st.expander("Grade評価について", expanded=False):
         for grade, title, description in GRADE_CRITERIA:
-            st.markdown(f"**Grade {grade}: {title}**  \n{description}")
+            st.markdown(
+                f"<div style='color:#346D99;font-weight:800;margin-top:0.45rem;'>"
+                f"Grade {grade}: {title}</div>"
+                f"<div style='color:#475569;line-height:1.7;margin-bottom:0.75rem;'>"
+                f"{description}</div>",
+                unsafe_allow_html=True,
+            )
 
 
 # ─── 優先度→色 ───────────────────────────────────────────────────────────────────
@@ -1213,7 +1216,7 @@ def render_results(result: dict, img, mode: str = "expert"):
     actions = result.get("action_items", [])
     if actions:
         st.markdown("<h3 style='color:#346D99; margin-top:1.5rem; margin-bottom:0.5rem;'>すぐに実行できる改善アクション</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='color:var(--text-sub); font-size:0.9rem; margin-bottom:1rem;'>AIの診断結果に基づき、優先して取り組むべき具体的な改善策です。</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:var(--text-sub); font-size:0.9rem; margin-bottom:1rem;'>診断結果に基づき、優先して取り組むべき具体的な改善策です。</p>", unsafe_allow_html=True)
         num_cls = ["action-num", "action-num mid", "action-num low"]
         for i, action in enumerate(actions):
             cls = num_cls[i] if i < len(num_cls) else "action-num low"
