@@ -1033,12 +1033,31 @@ def analyze_image(model, image: Image.Image, location: str) -> dict:
 
 
 # ─── スコア→グレード ─────────────────────────────────────────────────────────────
+GRADE_CRITERIA = [
+    ("A", "とても良好", "5Sが定着しており、維持管理と標準化を進める段階です。"),
+    ("B", "良好", "大きな問題は少ないものの、一部に改善余地があります。"),
+    ("C", "要改善", "整理・整頓にばらつきがあり、改善ルールの見直しが必要です。"),
+    ("D", "優先改善", "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。"),
+    ("E", "早急な改善が必要", "5Sの土台から整える必要があり、優先的な改善が必要です。"),
+]
+
+
 def score_to_grade(score: int) -> tuple[str, str]:
-    if score >= 90: return "S", "#f093fb"
-    if score >= 75: return "A", "#667eea"
-    if score >= 60: return "B", "#22c55e"
-    if score >= 40: return "C", "#eab308"
-    return "D", "#ef4444"
+    if score >= 85: return "A", "#2563eb"
+    if score >= 70: return "B", "#16a34a"
+    if score >= 55: return "C", "#eab308"
+    if score >= 40: return "D", "#f97316"
+    return "E", "#ef4444"
+
+
+def render_grade_popover() -> None:
+    """Grade判定基準を必要な時だけ確認できるようにする。"""
+    with st.popover("Grade評価について?", use_container_width=True):
+        st.markdown(
+            "AIが内部的に算出した診断結果を、利用者に説明しやすい5段階のGradeに変換しています。"
+        )
+        for grade, title, description in GRADE_CRITERIA:
+            st.markdown(f"**Grade {grade}: {title}**  \n{description}")
 
 
 # ─── 優先度→色 ───────────────────────────────────────────────────────────────────
@@ -1119,17 +1138,15 @@ def render_results(result: dict, img, mode: str = "expert"):
         )
 
     with col_info:
-        # 総合スコア
+        # 総合Grade
         overall = result.get("overall_score", 0)
         grade, grade_color = score_to_grade(overall)
 
         st.markdown(f"""
 <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
   <div class="card" style="text-align:center; margin-bottom: 1rem;">
-    <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:0.4rem;letter-spacing:0.06em;">TOTAL SCORE</div>
-    <div class="score-value">{overall}</div>
-    <div style="color:{grade_color};font-size:1.5rem;font-weight:700;margin:0.3rem 0;">Grade {grade}</div>
-    <div style="color:#94a3b8;font-size:0.75rem;">/ 100 点</div>
+    <div style="color:#94a3b8;font-size:0.78rem;margin-bottom:0.4rem;letter-spacing:0.06em;">TOTAL GRADE</div>
+    <div style="color:{grade_color};font-size:3rem;font-weight:800;line-height:1;margin:0.35rem 0;">Grade {grade}</div>
   </div>
   
   <div class="card" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
@@ -1140,6 +1157,7 @@ def render_results(result: dict, img, mode: str = "expert"):
   </div>
 </div>
 """, unsafe_allow_html=True)
+        render_grade_popover()
 
     _current_img_bytes = result.get("_pdf_image_bytes") or pil_image_to_jpeg_bytes(img, quality=88)
     img_fname = st.session_state.get("current_report_fname", "")
@@ -1174,16 +1192,16 @@ def render_results(result: dict, img, mode: str = "expert"):
     # 2S 各項目のみ表示
     s_keys = ["seiri", "seiton"]
 
-    st.markdown("<h3 class='score-detail-heading'>2S 診断スコア詳細</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 class='score-detail-heading'>2S 診断詳細</h3>", unsafe_allow_html=True)
     for key in s_keys:
         item = result.get(key, {})
         score = item.get("score", 0)
+        grade, _grade_color = score_to_grade(score)
         title = item.get("title", key)
         comment = item.get("comment", "")
         priority = item.get("priority", "中")
 
-        with st.expander(f"{title}　{score}点　/ 優先度：{priority}", expanded=False):
-            st.progress(score / 100)
+        with st.expander(f"{title}　Grade {grade}　/ 優先度：{priority}", expanded=False):
             st.markdown(f"""
             <div class="result-box">{comment}</div>
             <span style="font-size:0.8rem;color:{priority_color(priority)};font-weight:600;">
@@ -1231,9 +1249,9 @@ def render_results(result: dict, img, mode: str = "expert"):
             label_visibility="collapsed"
         )
 
-        # 診断スコア詳細
+        # 診断詳細
         st.markdown(
-            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断スコア詳細（整理）</p>",
+            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整理）</p>",
             unsafe_allow_html=True
         )
         seiri = result.get("seiri", {})
@@ -1245,7 +1263,7 @@ def render_results(result: dict, img, mode: str = "expert"):
         )
 
         st.markdown(
-            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断スコア詳細（整頓）</p>",
+            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整頓）</p>",
             unsafe_allow_html=True
         )
         seiton = result.get("seiton", {})
@@ -1383,11 +1401,15 @@ def render_diagnosis_results_fragment() -> None:
         for i, (fname, img, result) in enumerate(results):
             is_sel = i == sel
             overall = result.get("overall_score", None) if result else None
-            score_txt = f"{overall}点" if overall is not None else "診断失敗"
-            score_col = "var(--primary)" if overall is not None else "#ef4444"
+            if overall is not None:
+                grade_txt, grade_col = score_to_grade(overall)
+                result_label = f"Grade {grade_txt}"
+            else:
+                grade_col = "#ef4444"
+                result_label = "診断失敗"
             short = (fname[:15] + "…") if len(fname) > 15 else fname
             safe_short = html.escape(short)
-            safe_score = html.escape(score_txt)
+            safe_result_label = html.escape(result_label)
 
             with st.container(border=is_sel):
                 thumb = img.copy()
@@ -1408,8 +1430,8 @@ def render_diagnosis_results_fragment() -> None:
                     unsafe_allow_html=True,
                 )
                 st.markdown(
-                    f"<div style='font-size:0.77rem;font-weight:700;color:{score_col};'>"
-                    f"{safe_score}</div>",
+                    f"<div style='font-size:0.77rem;font-weight:700;color:{grade_col};'>"
+                    f"{safe_result_label}</div>",
                     unsafe_allow_html=True,
                 )
                 st.markdown(
@@ -1417,7 +1439,7 @@ def render_diagnosis_results_fragment() -> None:
                     unsafe_allow_html=True,
                 )
                 st.button(
-                    "✓ 表示中" if is_sel else "スコア・総評を見る",
+                    "✓ 表示中" if is_sel else "判定・総評を見る",
                     key=f"diag_pick_{i}",
                     use_container_width=True,
                     type="primary" if is_sel else "secondary",

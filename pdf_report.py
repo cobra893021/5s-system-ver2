@@ -81,11 +81,11 @@ def _box(text: str, style) -> Table:
 
 
 def _grade(score: int) -> tuple[str, colors.Color]:
-    if score >= 90: return 'S', colors.HexColor('#f093fb')
-    if score >= 75: return 'A', colors.HexColor('#667eea')
-    if score >= 60: return 'B', colors.HexColor('#22c55e')
-    if score >= 40: return 'C', colors.HexColor('#eab308')
-    return 'D', colors.HexColor('#ef4444')
+    if score >= 85: return 'A', colors.HexColor('#2563eb')
+    if score >= 70: return 'B', colors.HexColor('#16a34a')
+    if score >= 55: return 'C', colors.HexColor('#eab308')
+    if score >= 40: return 'D', colors.HexColor('#f97316')
+    return 'E', colors.HexColor('#ef4444')
 
 
 def generate_pdf(
@@ -117,7 +117,7 @@ def generate_pdf(
     story.append(HRFlowable(width="100%", color=PRIMARY, thickness=1.5))
     story.append(Spacer(1, 6))
 
-    # ── 写真 ＋ スコア 横並び ──
+    # ── 写真 ＋ Grade 横並び ──
     overall = result.get("overall_score", 0)
     grade, grade_color = _grade(overall)
 
@@ -136,17 +136,15 @@ def generate_pdf(
         img_buf.seek(0)
         img_el = Image(img_buf, width=max_w, height=new_h)
 
-    score_content = [
-        [Paragraph("TOTAL SCORE", s['small'])],
-        [Paragraph(str(overall), s['score'])],
+    grade_content = [
+        [Paragraph("TOTAL GRADE", s['small'])],
         [Paragraph(f"Grade  {grade}", ParagraphStyle(
             'grade', fontName=FONT, fontSize=14,
             textColor=grade_color, alignment=1
         ))],
-        [Paragraph("/ 100 点", s['small'])],
     ]
-    score_table = Table(score_content, colWidths=[70 * mm])
-    score_table.setStyle(TableStyle([
+    grade_table = Table(grade_content, colWidths=[70 * mm])
+    grade_table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
@@ -155,7 +153,7 @@ def generate_pdf(
     ]))
 
     if img_el:
-        top_table = Table([[img_el, score_table]],
+        top_table = Table([[img_el, grade_table]],
                           colWidths=[95 * mm, 75 * mm])
         top_table.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -164,7 +162,7 @@ def generate_pdf(
         ]))
         story.append(top_table)
     else:
-        story.append(score_table)
+        story.append(grade_table)
 
     story.append(Spacer(1, 8))
 
@@ -174,15 +172,16 @@ def generate_pdf(
     story.append(_box(summary, s['box_text']))
     story.append(Spacer(1, 6))
 
-    # ── 2S診断スコア詳細 ──
-    story.append(Paragraph("■ 2S 診断スコア詳細", s['section']))
+    # ── 2S診断詳細 ──
+    story.append(Paragraph("■ 2S 診断詳細", s['section']))
     for key, label in [("seiri", "整理（Seiri）"), ("seiton", "整頓（Seiton）")]:
         item = result.get(key, {})
         score_val = item.get("score", 0)
+        item_grade, _ = _grade(score_val)
         comment = item.get("comment", "")
         priority = item.get("priority", "中")
         story.append(Paragraph(
-            f"{label}　{score_val}点　／　優先度：{priority}",
+            f"{label}　Grade {item_grade}　／　優先度：{priority}",
             ParagraphStyle(
                 'item_title', fontName=FONT, fontSize=9,
                 textColor=DARK, spaceBefore=4, spaceAfter=2
