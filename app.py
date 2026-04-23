@@ -256,8 +256,8 @@ GLOBAL_CSS = """
   }
 
   .member-login-shell {
-    min-height: calc(100vh - 7rem);
-    padding-top: 4.8rem;
+    min-height: auto;
+    padding-top: 1rem;
   }
 
   .member-login-page-title {
@@ -266,7 +266,7 @@ GLOBAL_CSS = """
     font-weight: 700;
     color: #346D99;
     text-align: center;
-    margin: 0 0 2.6rem 0;
+    margin: 0 0 1.35rem 0;
     letter-spacing: -0.01em;
   }
 
@@ -917,13 +917,13 @@ GLOBAL_CSS = """
     }
 
     .member-login-shell {
-      min-height: calc(100vh - 4rem);
-      padding-top: 2.7rem;
+      min-height: auto;
+      padding-top: 0.2rem;
     }
 
     .member-login-page-title {
       font-size: 2rem;
-      margin-bottom: 1.45rem;
+      margin-bottom: 0.95rem;
       white-space: nowrap;
     }
 
