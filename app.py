@@ -1762,10 +1762,10 @@ def main(mode: str | None = None):
     )
     st.markdown(f"""
     <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
-        <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード</div>
+        <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
         <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
             <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
-            <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b>　一度にアップロードできる枚数上限：<b>最大 10 枚</b></div>
+            <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
             <div style="margin-top:0.35rem;">{heic_notice_html}</div>
         </div>
     </div>
