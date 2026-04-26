@@ -87,6 +87,16 @@ def _grade(score: int) -> tuple[str, colors.Color]:
     return 'D', colors.HexColor('#ef4444')
 
 
+def _grade_description(grade: str) -> str:
+    descriptions = {
+        "A": "2S（整理、整頓）が高いレベルであり、ムダが少ない現場です。維持管理（習慣化）が課題となります。",
+        "B": "大きな問題は少ないものの、一部に改善余地があります。改善を行い、現場の収益力を高めましょう。",
+        "C": "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。改善を行うことで10％程度の生産性、収益性の改善が見込まれます。",
+        "D": "探す時間、歩行などが多く発生して、生産性、収益性を大きく下げており、至急改善が必要です。改善を行うことで20％以上の生産性、収益性の改善が見込まれます。",
+    }
+    return descriptions.get(grade, "")
+
+
 def generate_pdf(
     result: dict[str, Any],
     image_bytes: bytes,
@@ -121,6 +131,7 @@ def generate_pdf(
     # ── 写真 ＋ Grade 横並び ──
     overall = result.get("overall_score", 0)
     grade, grade_color = _grade(overall)
+    grade_description = _grade_description(grade)
 
     img_el = None
     if image_bytes:
@@ -143,6 +154,17 @@ def generate_pdf(
             'grade', fontName=FONT, fontSize=32, leading=36,
             textColor=grade_color, alignment=1
         ))],
+        [Paragraph(
+            grade_description,
+            ParagraphStyle(
+                'grade_desc_single',
+                fontName=FONT,
+                fontSize=8,
+                leading=14,
+                textColor=DARK,
+                alignment=0,
+            )
+        )],
     ]
     grade_table = Table(grade_content, colWidths=[70 * mm])
     grade_table.setStyle(TableStyle([
@@ -151,6 +173,9 @@ def generate_pdf(
         ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
         ('TOPPADDING', (0, 0), (-1, -1), 8),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('ALIGN', (0, 2), (0, 2), 'LEFT'),
     ]))
 
     if img_el:
