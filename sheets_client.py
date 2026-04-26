@@ -332,7 +332,7 @@ def authenticate_member_user(login_id: str, password: str) -> dict[str, str] | N
             return {
                 "login_id": row_login_id,
                 "company_name": str(row.get("会社名") or "").strip(),
-                "default_location": str(row.get("診断場所") or "").strip(),
+                "default_location": str(row.get("部門") or row.get("診断場所") or "").strip(),
             }
 
     return None

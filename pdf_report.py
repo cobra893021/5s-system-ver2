@@ -114,7 +114,7 @@ def generate_pdf(
     story.append(Paragraph("5S 診断レポート", s['title']))
     story.append(Spacer(1, 4))
     now_str = datetime.now().strftime("%Y/%m/%d")
-    meta = f"診断日：{now_str}　　会社名：{company or '未入力'}　　診断場所：{location or '未入力'}"
+    meta = f"診断日：{now_str}　　会社名：{company or '未入力'}　　部門：{location or '未入力'}"
     story.append(Paragraph(meta, s['subtitle']))
     story.append(HRFlowable(width="100%", color=PRIMARY, thickness=1.5))
     story.append(Spacer(1, 6))

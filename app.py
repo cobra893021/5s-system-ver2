@@ -1383,65 +1383,69 @@ def render_results(result: dict, img, mode: str = "expert"):
         unsafe_allow_html=True
     )
 
-    expander_title = "内容を編集してからダウンロード" if mode == "expert" else "内容を調整してからダウンロード"
+    edited_summary = result.get("summary", "")
+    seiri = result.get("seiri", {})
+    seiton = result.get("seiton", {})
+    edited_seiri_comment = seiri.get("comment", "")
+    edited_seiton_comment = seiton.get("comment", "")
+    actions = result.get("action_items") or []
+    edited_actions = list(actions)
 
-    # ── 編集フォーム ──
-    with st.expander(expander_title, expanded=False):
+    if mode == "expert":
+        expander_title = "内容を編集してからダウンロード"
 
-        # 総評
-        st.markdown(
-            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>総評</p>",
-            unsafe_allow_html=True
-        )
-        edited_summary = st.text_area(
-            label="総評",
-            value=result.get("summary", ""),
-            key=f"edit_summary_{id(result)}",
-            label_visibility="collapsed"
-        )
+        # ── 編集フォーム ──
+        with st.expander(expander_title, expanded=False):
 
-        # 診断詳細
-        st.markdown(
-            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整理）</p>",
-            unsafe_allow_html=True
-        )
-        seiri = result.get("seiri", {})
-        edited_seiri_comment = st.text_area(
-            label="整理コメント",
-            value=seiri.get("comment", ""),
-            key=f"edit_seiri_comment_{id(result)}",
-            label_visibility="collapsed"
-        )
-
-        st.markdown(
-            "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整頓）</p>",
-            unsafe_allow_html=True
-        )
-        seiton = result.get("seiton", {})
-        edited_seiton_comment = st.text_area(
-            label="整頓コメント",
-            value=seiton.get("comment", ""),
-            key=f"edit_seiton_comment_{id(result)}",
-            label_visibility="collapsed"
-        )
-
-        # 改善アクション
-        actions = result.get("action_items") or []
-        edited_actions = []
-        for i, action in enumerate(actions):
+            # 総評
             st.markdown(
-                f"<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>改善アクション {i+1}</p>",
+                "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>総評</p>",
                 unsafe_allow_html=True
             )
-            edited = st.text_area(
-                label=f"改善アクション{i+1}",
-                value=action,
-                key=f"edit_action_{id(result)}_{i}",
+            edited_summary = st.text_area(
+                label="総評",
+                value=result.get("summary", ""),
+                key=f"edit_summary_{id(result)}",
                 label_visibility="collapsed"
             )
-            edited_actions.append(edited)
 
-        if mode == "expert":
+            # 診断詳細
+            st.markdown(
+                "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整理）</p>",
+                unsafe_allow_html=True
+            )
+            edited_seiri_comment = st.text_area(
+                label="整理コメント",
+                value=seiri.get("comment", ""),
+                key=f"edit_seiri_comment_{id(result)}",
+                label_visibility="collapsed"
+            )
+
+            st.markdown(
+                "<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>診断詳細（整頓）</p>",
+                unsafe_allow_html=True
+            )
+            edited_seiton_comment = st.text_area(
+                label="整頓コメント",
+                value=seiton.get("comment", ""),
+                key=f"edit_seiton_comment_{id(result)}",
+                label_visibility="collapsed"
+            )
+
+            edited_actions = []
+            for i, action in enumerate(actions):
+                st.markdown(
+                    f"<p style='color:#1e293b; font-weight:bold; margin-bottom:4px;'>改善アクション {i+1}</p>",
+                    unsafe_allow_html=True
+                )
+                edited = st.text_area(
+                    label=f"改善アクション{i+1}",
+                    value=action,
+                    key=f"edit_action_{id(result)}_{i}",
+                    label_visibility="collapsed"
+                )
+                edited_actions.append(edited)
+
             if st.button("診断士コメントを保存して確定", key=f"save_confirm_{id(result)}", use_container_width=True):
                 try:
                     from sheets_client import update_expert_review
@@ -1897,16 +1901,20 @@ def main(mode: str | None = None):
     with center_inputs:
         col_company, col_location = st.columns(2)
         with col_company:
+            company_input_label = "会社名（固定）" if app_mode == "member" else "会社名（必須）"
             company = st.text_input(
-                "会社名（必須）",
+                company_input_label,
                 placeholder="例：株式会社〇〇",
                 key="main_company",
                 value=st.session_state.get("main_company", ""),
+                disabled=(app_mode == "member"),
             )
         with col_location:
+            location_input_label = "部門（必須）" if app_mode == "member" else "診断場所（必須）"
+            location_placeholder = "例：製造部、品質管理部" if app_mode == "member" else "例：製造ライン、倉庫"
             location = st.text_input(
-                "診断場所（必須）",
-                placeholder="例：製造ライン、倉庫",
+                location_input_label,
+                placeholder=location_placeholder,
                 key="main_location",
                 value=st.session_state.get("main_location", ""),
             )
@@ -2004,7 +2012,10 @@ def main(mode: str | None = None):
 
         if diagnose:
             if not company.strip() or not location.strip():
-                st.error("会社名と診断場所は必須です。入力してから診断してください。")
+                if app_mode == "member":
+                    st.error("会社名と部門は必須です。入力してから診断してください。")
+                else:
+                    st.error("会社名と診断場所は必須です。入力してから診断してください。")
                 st.stop()
             if uploaded_files and len(uploaded_files) > MAX_IMAGES:
                 uploaded_files = uploaded_files[:MAX_IMAGES]
