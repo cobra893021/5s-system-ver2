@@ -1376,12 +1376,13 @@ def render_results(result: dict, img, mode: str = "expert"):
             """, unsafe_allow_html=True)
 
     # ── PDF編集・DLセクション ──
-    st.markdown("---")
-    st.markdown(
-        "<h3 class='report-download-heading'>"
-        "レポート作成・ダウンロード</h3>",
-        unsafe_allow_html=True
-    )
+    if mode == "expert":
+        st.markdown("---")
+        st.markdown(
+            "<h3 class='report-download-heading'>"
+            "レポート作成・ダウンロード</h3>",
+            unsafe_allow_html=True
+        )
 
     edited_summary = result.get("summary", "")
     seiri = result.get("seiri", {})
