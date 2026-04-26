@@ -52,15 +52,13 @@ def _score_to_grade(score: int | float | str | None) -> str:
     except (TypeError, ValueError):
         return str(score or "").strip().upper()
 
-    if score_num >= 85:
+    if score_num >= 80:
         return "A"
-    if score_num >= 70:
+    if score_num >= 60:
         return "B"
-    if score_num >= 55:
-        return "C"
     if score_num >= 40:
-        return "D"
-    return "E"
+        return "C"
+    return "D"
 
 
 def _get_secret(name: str, default: str = "") -> str:

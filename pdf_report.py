@@ -81,11 +81,10 @@ def _box(text: str, style) -> Table:
 
 
 def _grade(score: int) -> tuple[str, colors.Color]:
-    if score >= 85: return 'A', colors.HexColor('#2563eb')
-    if score >= 70: return 'B', colors.HexColor('#16a34a')
-    if score >= 55: return 'C', colors.HexColor('#eab308')
-    if score >= 40: return 'D', colors.HexColor('#f97316')
-    return 'E', colors.HexColor('#ef4444')
+    if score >= 80: return 'A', colors.HexColor('#2563eb')
+    if score >= 60: return 'B', colors.HexColor('#16a34a')
+    if score >= 40: return 'C', colors.HexColor('#f97316')
+    return 'D', colors.HexColor('#ef4444')
 
 
 def generate_pdf(
@@ -174,6 +173,25 @@ def generate_pdf(
     story.append(_box(summary, s['box_text']))
     story.append(Spacer(1, 6))
 
+    # ── Grade評価について ──
+    story.append(Paragraph("■ Grade評価について", s['section']))
+    grade_items = [
+        ("A", "とても良好", "2S（整理、整頓）が高いレベルであり、ムダが少ない現場です。維持管理（習慣化）が課題となります。"),
+        ("B", "良好", "大きな問題は少ないものの、一部に改善余地があります。改善を行い、現場の収益力を高めましょう。"),
+        ("C", "要改善", "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。改善を行うことで10％程度の生産性、収益性の改善が見込まれます。"),
+        ("D", "早急な改善が必要", "探す時間、歩行などが多く発生して、生産性、収益性を大きく下げており、至急改善が必要です。改善を行うことで20％以上の生産性、収益性の改善が見込まれます。"),
+    ]
+    grade_desc_style = ParagraphStyle(
+        'grade_desc', fontName=FONT, fontSize=8,
+        textColor=DARK, leading=14, spaceAfter=4
+    )
+    for g, title, description in grade_items:
+        story.append(Paragraph(
+            f'<font color="#346D99">Grade {g}: {title}</font><br/>{description}',
+            grade_desc_style,
+        ))
+    story.append(Spacer(1, 4))
+
     # ── 2S診断詳細 ──
     story.append(Paragraph("■ 2S 診断詳細", s['section']))
     for key, label in [("seiri", "整理（Seiri）"), ("seiton", "整頓（Seiton）")]:
@@ -223,24 +241,6 @@ def generate_pdf(
             ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ]))
         story.append(action_row)
-
-    if seiri_video_url or seiton_video_url:
-        story.append(Spacer(1, 6))
-        story.append(Paragraph("■ 2S（整理・整頓）について学ぶ", s['section']))
-        link_style = ParagraphStyle(
-            'video_link', fontName=FONT, fontSize=8,
-            textColor=PRIMARY, leading=14, spaceAfter=3
-        )
-        if seiri_video_url:
-            story.append(Paragraph(
-                f'・<link href="{seiri_video_url}">整理とは？</link>',
-                link_style,
-            ))
-        if seiton_video_url:
-            story.append(Paragraph(
-                f'・<link href="{seiton_video_url}">整頓とは？</link>',
-                link_style,
-            ))
 
     # ── フッター ──
     story.append(Spacer(1, 8))
