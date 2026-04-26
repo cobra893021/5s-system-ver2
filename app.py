@@ -1909,8 +1909,8 @@ def main(mode: str | None = None):
                 disabled=(app_mode == "member"),
             )
         with col_location:
-            location_input_label = "部門（必須）" if app_mode == "member" else "診断場所（必須）"
-            location_placeholder = "例：製造部、品質管理部" if app_mode == "member" else "例：製造ライン、倉庫"
+            location_input_label = "部門（必須）"
+            location_placeholder = "例：製造部、品質管理部"
             location = st.text_input(
                 location_input_label,
                 placeholder=location_placeholder,
@@ -2011,10 +2011,7 @@ def main(mode: str | None = None):
 
         if diagnose:
             if not company.strip() or not location.strip():
-                if app_mode == "member":
-                    st.error("会社名と部門は必須です。入力してから診断してください。")
-                else:
-                    st.error("会社名と診断場所は必須です。入力してから診断してください。")
+                st.error("会社名と部門は必須です。入力してから診断してください。")
                 st.stop()
             if uploaded_files and len(uploaded_files) > MAX_IMAGES:
                 uploaded_files = uploaded_files[:MAX_IMAGES]
