@@ -28,6 +28,9 @@ PRIMARY = colors.HexColor('#346D99')
 LIGHT_BG = colors.HexColor('#EEF5FB')
 GRAY = colors.HexColor('#475569')
 DARK = colors.HexColor('#1e293b')
+PDF_IMAGE_MAX_W_PX = 1280
+PDF_IMAGE_MAX_H_PX = 960
+PDF_IMAGE_QUALITY = 58
 
 
 def _styles():
@@ -97,6 +100,33 @@ def _grade_description(grade: str) -> str:
     return descriptions.get(grade, "")
 
 
+def _prepare_pdf_image(image_bytes: bytes) -> tuple[io.BytesIO, float, float] | tuple[None, None, None]:
+    if not image_bytes:
+        return None, None, None
+
+    pil = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
+    pil.thumbnail((PDF_IMAGE_MAX_W_PX, PDF_IMAGE_MAX_H_PX), PILImage.LANCZOS)
+
+    max_w = 85 * mm
+    ratio = max_w / pil.width
+    new_h = pil.height * ratio
+    if new_h > 60 * mm:
+        ratio = (60 * mm) / pil.height
+        max_w = pil.width * ratio
+        new_h = 60 * mm
+
+    img_buf = io.BytesIO()
+    pil.save(
+        img_buf,
+        format="JPEG",
+        quality=PDF_IMAGE_QUALITY,
+        optimize=True,
+        progressive=True,
+    )
+    img_buf.seek(0)
+    return img_buf, max_w, new_h
+
+
 def generate_pdf(
     result: dict[str, Any],
     image_bytes: bytes,
@@ -134,19 +164,9 @@ def generate_pdf(
     grade_description = _grade_description(grade)
 
     img_el = None
-    if image_bytes:
-        pil = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
-        max_w = 85 * mm
-        ratio = max_w / pil.width
-        new_h = pil.height * ratio
-        if new_h > 60 * mm:
-            ratio = (60 * mm) / pil.height
-            max_w = pil.width * ratio
-            new_h = 60 * mm
-        img_buf = io.BytesIO()
-        pil.save(img_buf, format="JPEG", quality=85)
-        img_buf.seek(0)
-        img_el = Image(img_buf, width=max_w, height=new_h)
+    prepared_img, max_w, new_h = _prepare_pdf_image(image_bytes)
+    if prepared_img:
+        img_el = Image(prepared_img, width=max_w, height=new_h)
 
     grade_content = [
         [Paragraph("TOTAL GRADE", s['small'])],
