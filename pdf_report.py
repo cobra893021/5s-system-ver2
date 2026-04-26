@@ -173,25 +173,6 @@ def generate_pdf(
     story.append(_box(summary, s['box_text']))
     story.append(Spacer(1, 6))
 
-    # ── Grade評価について ──
-    story.append(Paragraph("■ Grade評価について", s['section']))
-    grade_items = [
-        ("A", "とても良好", "2S（整理、整頓）が高いレベルであり、ムダが少ない現場です。維持管理（習慣化）が課題となります。"),
-        ("B", "良好", "大きな問題は少ないものの、一部に改善余地があります。改善を行い、現場の収益力を高めましょう。"),
-        ("C", "要改善", "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。改善を行うことで10％程度の生産性、収益性の改善が見込まれます。"),
-        ("D", "早急な改善が必要", "探す時間、歩行などが多く発生して、生産性、収益性を大きく下げており、至急改善が必要です。改善を行うことで20％以上の生産性、収益性の改善が見込まれます。"),
-    ]
-    grade_desc_style = ParagraphStyle(
-        'grade_desc', fontName=FONT, fontSize=8,
-        textColor=DARK, leading=14, spaceAfter=4
-    )
-    for g, title, description in grade_items:
-        story.append(Paragraph(
-            f'<font color="#346D99">Grade {g}: {title}</font><br/>{description}',
-            grade_desc_style,
-        ))
-    story.append(Spacer(1, 4))
-
     # ── 2S診断詳細 ──
     story.append(Paragraph("■ 2S 診断詳細", s['section']))
     for key, label in [("seiri", "整理（Seiri）"), ("seiton", "整頓（Seiton）")]:
