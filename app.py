@@ -3,14 +3,15 @@ import base64
 import hashlib
 import html
 import io
+import json
 import os
-import urllib.parse
 import uuid
 from datetime import datetime
 from typing import Any, Optional
 
 import google.generativeai as genai
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
 from knowledge import get_knowledge_context
@@ -68,41 +69,6 @@ def get_local_file_data_url(path: str) -> str:
     }
     mime = mime_map.get(ext, "application/octet-stream")
     return f"data:{mime};base64,{encoded}"
-
-
-def build_local_guide_page_url(image_data_url: str) -> str:
-    page_html = f"""<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <title>画像アップ時の注意点</title>
-  <style>
-    body {{
-      margin: 0;
-      padding: 24px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #ffffff;
-      color: #1e293b;
-    }}
-    h1 {{
-      margin: 0 0 16px 0;
-      font-size: 24px;
-      font-weight: 700;
-      color: #0B2E5F;
-    }}
-    img {{
-      display: block;
-      width: 100%;
-      height: auto;
-    }}
-  </style>
-</head>
-<body>
-  <h1>画像アップ時の注意点</h1>
-  <img src="{html.escape(image_data_url, quote=True)}" alt="画像アップ時の注意点">
-</body>
-</html>"""
-    return "data:text/html;charset=utf-8," + urllib.parse.quote(page_html, safe="")
 
 
 def _gallery_item_key(item: dict[str, Any]) -> tuple[str, str]:
@@ -1982,22 +1948,68 @@ def main(mode: str | None = None):
     heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
     if local_heic_guide_url:
-        local_heic_guide_page_url = build_local_guide_page_url(local_heic_guide_url)
-        heic_notice_link_html = (
-            f'<a href="{html.escape(local_heic_guide_page_url, quote=True)}" target="_blank" '
-            f'rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">'
-            f'{heic_notice}</a>'
-        )
-        st.markdown(f"""
-        <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
-            <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
-            <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+        local_heic_guide_url_js = json.dumps(local_heic_guide_url)
+        components.html(
+            f"""
+            <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem; font-family:sans-serif;">
+              <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+              <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
                 <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
                 <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
-                <div style="margin-top:0.35rem;">{heic_notice_link_html}</div>
+                <div style="margin-top:0.35rem;">
+                  <a href="#"
+                     id="heic-guide-link"
+                     style="color:#dc2626; font-weight:800; text-decoration:underline;">{html.escape(heic_notice)}</a>
+                </div>
+              </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            <script>
+              const guideDataUrl = {local_heic_guide_url_js};
+              const guideLink = document.getElementById("heic-guide-link");
+              guideLink.addEventListener("click", function(event) {{
+                event.preventDefault();
+                const guideWindow = window.open("", "_blank", "noopener,noreferrer");
+                if (!guideWindow) return;
+                guideWindow.document.open();
+                guideWindow.document.write(`
+                  <!doctype html>
+                  <html lang="ja">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>画像アップ時の注意点</title>
+                    <style>
+                      body {{
+                        margin: 0;
+                        padding: 24px;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                        background: #ffffff;
+                        color: #1e293b;
+                      }}
+                      h1 {{
+                        margin: 0 0 16px 0;
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #0B2E5F;
+                      }}
+                      img {{
+                        display: block;
+                        width: 100%;
+                        height: auto;
+                      }}
+                    </style>
+                  </head>
+                  <body>
+                    <h1>画像アップ時の注意点</h1>
+                    <img src="${{guideDataUrl}}" alt="画像アップ時の注意点">
+                  </body>
+                  </html>
+                `);
+                guideWindow.document.close();
+              }});
+            </script>
+            """,
+            height=150,
+        )
     elif heic_guide_url:
         heic_notice_link_html = (
             f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
