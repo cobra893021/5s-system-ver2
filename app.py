@@ -5,6 +5,7 @@ import html
 import io
 import os
 import uuid
+import urllib.parse
 from datetime import datetime
 from typing import Any, Optional
 
@@ -1946,15 +1947,42 @@ def main(mode: str | None = None):
     heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
     if local_heic_guide_url:
+        popup_html = f"""<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>{heic_notice}</title>
+  <style>
+    html, body {{
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }}
+    body {{
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 16px;
+      box-sizing: border-box;
+    }}
+    img {{
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }}
+  </style>
+</head>
+<body>
+  <img src="{local_heic_guide_url}" alt="{heic_notice}">
+</body>
+</html>"""
+        popup_url = "data:text/html;charset=utf-8," + urllib.parse.quote(popup_html)
         heic_notice_html = f"""
-        <details style="margin-top:0.35rem;">
-          <summary style="color:#dc2626; font-weight:800; text-decoration:underline; cursor:pointer;">
-            {heic_notice}
-          </summary>
-          <div style="margin-top:0.65rem;">
-            <img src="{html.escape(local_heic_guide_url, quote=True)}" alt="{heic_notice}" style="width:100%; border:1px solid #dbe4ee; border-radius:10px;" />
-          </div>
-        </details>
+        <a href="{html.escape(popup_url, quote=True)}" target="_blank"
+           rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">
+          {heic_notice}
+        </a>
         """
     elif heic_guide_url:
         heic_notice_html = (
