@@ -1968,10 +1968,7 @@ def main(mode: str | None = None):
               const guideLink = document.getElementById("heic-guide-link");
               guideLink.addEventListener("click", function(event) {{
                 event.preventDefault();
-                const guideWindow = window.open("", "_blank", "noopener,noreferrer");
-                if (!guideWindow) return;
-                guideWindow.document.open();
-                guideWindow.document.write(`
+                const guideHtml = `
                   <!doctype html>
                   <html lang="ja">
                   <head>
@@ -2003,8 +2000,15 @@ def main(mode: str | None = None):
                     <img src="${{guideDataUrl}}" alt="画像アップ時の注意点">
                   </body>
                   </html>
-                `);
-                guideWindow.document.close();
+                `;
+                const guideBlob = new Blob([guideHtml], {{ type: "text/html" }});
+                const guideUrl = URL.createObjectURL(guideBlob);
+                const guideWindow = window.open(guideUrl, "_blank", "noopener,noreferrer");
+                if (!guideWindow) {{
+                  URL.revokeObjectURL(guideUrl);
+                  return;
+                }}
+                setTimeout(() => URL.revokeObjectURL(guideUrl), 60000);
               }});
             </script>
             """,
