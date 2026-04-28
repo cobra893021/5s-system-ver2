@@ -2025,14 +2025,8 @@ def main(mode: str | None = None):
                   </body>
                   </html>
                 `;
-                const guideBlob = new Blob([guideHtml], {{ type: "text/html" }});
-                const guideUrl = URL.createObjectURL(guideBlob);
-                const guideWindow = window.open(guideUrl, "_blank", "noopener,noreferrer");
-                if (!guideWindow) {{
-                  URL.revokeObjectURL(guideUrl);
-                  return;
-                }}
-                setTimeout(() => URL.revokeObjectURL(guideUrl), 60000);
+                const guideUrl = "data:text/html;charset=utf-8," + encodeURIComponent(guideHtml);
+                window.open(guideUrl, "_blank");
               }});
             </script>
             """,
