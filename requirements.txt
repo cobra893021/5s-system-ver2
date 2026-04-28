@@ -5,3 +5,4 @@ python-dotenv>=1.0.0
 gspread>=5.12.0
 google-auth>=2.23.0
 reportlab>=4.0.0
+weasyprint>=62.3
