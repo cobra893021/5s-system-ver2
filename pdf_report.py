@@ -102,6 +102,32 @@ def rounded_card(c, x: float, y: float, w: float, h: float, radius: float = 4, s
     c.restoreState()
 
 
+def draw_summary_icon(c, x: float, y: float, w: float, h: float):
+    c.saveState()
+    c.setFillColor(COLORS["navy"])
+    c.roundRect(x, y, w, h, 2, stroke=0, fill=1)
+    c.setStrokeColor(colors.white)
+    c.setLineWidth(1.1)
+    bubble_x = x + 3.0 * mm
+    bubble_y = y + 3.3 * mm
+    bubble_w = w - 6.0 * mm
+    bubble_h = h - 7.0 * mm
+    c.roundRect(bubble_x, bubble_y, bubble_w, bubble_h, 1.6 * mm, stroke=1, fill=0)
+    tail = [
+        (bubble_x + 5.0 * mm, bubble_y),
+        (bubble_x + 7.3 * mm, bubble_y - 2.0 * mm),
+        (bubble_x + 8.6 * mm, bubble_y),
+    ]
+    path = c.beginPath()
+    path.moveTo(*tail[0])
+    path.lineTo(*tail[1])
+    path.lineTo(*tail[2])
+    c.drawPath(path, stroke=1, fill=0)
+    for dy in (bubble_y + bubble_h - 3.0 * mm, bubble_y + bubble_h - 5.5 * mm):
+        c.line(bubble_x + 2.0 * mm, dy, bubble_x + bubble_w - 2.0 * mm, dy)
+    c.restoreState()
+
+
 def navy_label(c, x: float, y: float, text: str, w: float = 32 * mm, h: float = 6 * mm):
     c.saveState()
     c.setFillColor(COLORS["navy"])
@@ -221,7 +247,7 @@ def draw_top_section(c, data: dict[str, Any], y: float) -> float:
 
         fill = colors.HexColor("#FFF7ED") if is_active and grade == "C" else None
         stroke = color if is_active else COLORS["line"]
-        rounded_card(c, inner_x, gy, inner_w, row_h, radius=3, stroke=stroke, fill=fill, width=0.9 if is_active else 0.5)
+        rounded_card(c, inner_x, gy, inner_w, row_h, radius=3, stroke=stroke, fill=fill, width=1.6 if is_active else 0.7)
 
         left_w = 24 * mm
         c.setStrokeColor(color)
@@ -252,8 +278,7 @@ def draw_summary(c, data: dict[str, Any], y: float) -> float:
     bottom = y - h
 
     rounded_card(c, x, bottom, CONTENT_W, h)
-    c.setFillColor(COLORS["navy"])
-    c.roundRect(x + 4 * mm, bottom + h - 16 * mm, 12 * mm, 12 * mm, 2, stroke=0, fill=1)
+    draw_summary_icon(c, x + 4 * mm, bottom + h - 16 * mm, 12 * mm, 12 * mm)
 
     c.setFillColor(COLORS["navy"])
     c.setFont(FONT, 10)
@@ -317,10 +342,12 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
         comment = item.get("comment", "")
 
         tx = x + label_w + 5 * mm
-        c.setFillColor(COLORS["text"])
         c.setFont(FONT, 8.5)
+        c.setFillColor(COLORS["navy"])
         c.drawString(tx, ry + row_h - 8 * mm, f"Grade：{score_grade}")
-        c.drawString(tx + 32 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
+        c.setFillColor(COLORS["sub"])
+        c.drawString(tx + 24 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
+        c.setFillColor(COLORS["text"])
 
         para(c, comment, tx, ry + 3.5 * mm, CONTENT_W - label_w - 8 * mm, row_h - 13 * mm, size=7.9, leading=10.2)
         current_row_top = ry
@@ -387,7 +414,7 @@ def draw_learning(c, y: float) -> float:
         cx = x + col_w * i + 4 * mm
         cy = bottom + 2.5 * mm
         cw = col_w - 8 * mm
-        ch = 11 * mm
+        ch = 12 * mm
 
         rounded_card(c, cx, cy, cw, ch, radius=3, stroke=colors.white, fill=colors.white)
         c.setFillColor(COLORS["green_bg"])
@@ -398,14 +425,14 @@ def draw_learning(c, y: float) -> float:
         c.drawString(cx + 22 * mm, cy + 6.5 * mm, label.split("\n")[0])
         c.drawString(cx + 22 * mm, cy + 2.5 * mm, label.split("\n")[1])
 
-        qr_w = 16 * mm
+        qr_w = 21 * mm
         qx = cx + cw - qr_w - 4 * mm
-        qy = cy + 2 * mm
-        rounded_card(c, qx, qy, qr_w, ch - 4 * mm, radius=2)
+        qy = cy + 1.2 * mm
+        rounded_card(c, qx, qy, qr_w, ch - 2.4 * mm, radius=2)
         c.setFillColor(COLORS["text"])
-        c.setFont(FONT, 8)
-        c.drawCentredString(qx + qr_w / 2, qy + 5.5 * mm, "QR")
-        c.drawCentredString(qx + qr_w / 2, qy + 2 * mm, "コード")
+        c.setFont(FONT, 8.2)
+        c.drawCentredString(qx + qr_w / 2, qy + 6.3 * mm, "QR")
+        c.drawCentredString(qx + qr_w / 2, qy + 2.6 * mm, "コード")
 
     return bottom
 
