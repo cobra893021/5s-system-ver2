@@ -1947,25 +1947,21 @@ def main(mode: str | None = None):
     local_heic_guide_url = get_local_file_data_url(HEIC_GUIDE_LOCAL_PATH)
     heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
-    heic_notice_html = f'<span style="color:#dc2626; font-weight:800; text-decoration:underline;">{heic_notice}</span>'
-    st.markdown(f"""
-    <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:0.4rem;">
-        <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
-        <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
-            <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
-            <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
-            <div style="margin-top:0.35rem;">{heic_notice_html}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
     if local_heic_guide_url:
         local_heic_guide_url_js = json.dumps(local_heic_guide_url)
         components.html(
             f"""
-            <div style="margin:0 0 1rem 0; font-family:sans-serif;">
-              <a href="#"
-                 id="heic-guide-link"
-                 style="color:#dc2626; font-weight:800; text-decoration:underline;">{html.escape(heic_notice)}</a>
+            <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem; font-family:sans-serif;">
+              <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+              <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">
+                  <a href="#"
+                     id="heic-guide-link"
+                     style="color:#dc2626; font-weight:800; text-decoration:underline;">{html.escape(heic_notice)}</a>
+                </div>
+              </div>
             </div>
             <script>
               const guideDataUrl = {local_heic_guide_url_js};
@@ -1987,7 +1983,7 @@ def main(mode: str | None = None):
               }});
             </script>
             """,
-            height=34,
+            height=150,
         )
     elif heic_guide_url:
         heic_notice_link_html = (
@@ -1996,8 +1992,25 @@ def main(mode: str | None = None):
             f'{heic_notice}</a>'
         )
         st.markdown(f"""
-        <div style="margin:-0.2rem 0 1rem 0;">
-            {heic_notice_link_html}
+        <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
+            <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+            <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">{heic_notice_link_html}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        heic_notice_html = f'<span style="color:#dc2626; font-weight:800; text-decoration:underline;">{heic_notice}</span>'
+        st.markdown(f"""
+        <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
+            <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+            <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">{heic_notice_html}</div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
