@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 import google.generativeai as genai
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
 from knowledge import get_knowledge_context
@@ -1947,42 +1948,71 @@ def main(mode: str | None = None):
     heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
     if local_heic_guide_url:
-        local_heic_guide_page = (
-            "<!doctype html><html><head><meta charset='utf-8'>"
-            "<title>画像形式案内</title>"
-            "<style>"
-            "html,body{margin:0;padding:0;background:#ffffff;}"
-            "img{display:block;width:100%;height:auto;}"
-            "</style></head><body>"
-            f"<img src=\"{html.escape(local_heic_guide_url, quote=True)}\" alt=\"画像形式案内\">"
-            "</body></html>"
+        local_heic_guide_url_js = json.dumps(local_heic_guide_url)
+        components.html(
+            f"""
+            <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem; font-family:sans-serif;">
+              <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+              <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">
+                  <a href="#"
+                     id="heic-guide-link"
+                     style="color:#dc2626; font-weight:800; text-decoration:underline;">{html.escape(heic_notice)}</a>
+                </div>
+              </div>
+            </div>
+            <script>
+              const guideDataUrl = {local_heic_guide_url_js};
+              const guideLink = document.getElementById("heic-guide-link");
+              guideLink.addEventListener("click", function(event) {{
+                event.preventDefault();
+                const parts = guideDataUrl.split(",");
+                const mimeMatch = parts[0].match(/data:(.*?);base64/);
+                const mime = mimeMatch ? mimeMatch[1] : "image/png";
+                const byteString = atob(parts[1]);
+                const byteNumbers = new Array(byteString.length);
+                for (let i = 0; i < byteString.length; i += 1) {{
+                  byteNumbers[i] = byteString.charCodeAt(i);
+                }}
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], {{ type: mime }});
+                const blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, "_blank", "noopener,noreferrer");
+              }});
+            </script>
+            """,
+            height=128,
         )
-        local_heic_guide_page_js = json.dumps(local_heic_guide_page, ensure_ascii=False)
-        heic_notice_html = f"""
-        <a href="#"
-           onclick='event.preventDefault(); const guideWindow = window.open("", "_blank"); if (guideWindow) {{ guideWindow.document.open(); guideWindow.document.write({local_heic_guide_page_js}); guideWindow.document.close(); }}'
-           style="color:#dc2626; font-weight:800; text-decoration:underline;">
-          {heic_notice}
-        </a>
-        """
     elif heic_guide_url:
         heic_notice_html = (
             f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
             f'rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">'
             f'{heic_notice}</a>'
         )
+        st.markdown(f"""
+        <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
+            <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+            <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">{heic_notice_html}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
         heic_notice_html = f'<span style="color:#dc2626; font-weight:800;">{heic_notice}</span>'
-    st.markdown(f"""
-    <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
-        <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
-        <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
-            <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
-            <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
-            <div style="margin-top:0.35rem;">{heic_notice_html}</div>
+        st.markdown(f"""
+        <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
+            <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
+            <div style="color:#475569; font-size:0.9rem; line-height:1.75;">
+                <div>下の点線枠内にファイルを<b>ドラッグ＆ドロップ</b>するか、<b>Browse files</b>ボタンから選択してください。</div>
+                <div>アップロード可能な形式：<b>JPG, JPEG, PNG, WEBP</b></div>
+                <div style="margin-top:0.35rem;">{heic_notice_html}</div>
+            </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     # ─── 画像アップロード本体 ──────────────────────────────────────────
     uploaded_files = st.file_uploader(
