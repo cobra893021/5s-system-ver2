@@ -1977,27 +1977,51 @@ def main(mode: str | None = None):
                     <style>
                       body {{
                         margin: 0;
-                        padding: 24px;
+                        padding: 20px 16px 28px;
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
                         background: #ffffff;
                         color: #1e293b;
+                      }}
+                      .page {{
+                        max-width: 980px;
+                        margin: 0 auto;
                       }}
                       h1 {{
                         margin: 0 0 16px 0;
                         font-size: 24px;
                         font-weight: 700;
                         color: #0B2E5F;
+                        text-align: center;
                       }}
                       img {{
                         display: block;
                         width: 100%;
+                        max-width: 760px;
                         height: auto;
+                        margin: 0 auto;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+                      }}
+                      @media (max-width: 640px) {{
+                        body {{
+                          padding: 14px 10px 20px;
+                        }}
+                        h1 {{
+                          font-size: 18px;
+                          margin-bottom: 12px;
+                        }}
+                        img {{
+                          max-width: 100%;
+                          border-radius: 8px;
+                        }}
                       }}
                     </style>
                   </head>
                   <body>
-                    <h1>画像アップ時の注意点</h1>
-                    <img src="${{guideDataUrl}}" alt="画像アップ時の注意点">
+                    <div class="page">
+                      <h1>画像アップ時の注意点</h1>
+                      <img src="${{guideDataUrl}}" alt="画像アップ時の注意点">
+                    </div>
                   </body>
                   </html>
                 `;
