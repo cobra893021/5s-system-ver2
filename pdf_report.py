@@ -83,6 +83,13 @@ def para(c, text: str, x: float, y: float, w: float, h: float, size: float = 8, 
     return ph
 
 
+def measure_para_height(text: str, w: float, size: float = 8, leading: float = 10, color=None) -> float:
+    text = str(text or "").replace("\n", "<br/>")
+    p = Paragraph(text, pstyle(size=size, leading=leading, color=color))
+    _, ph = p.wrap(w, 10000)
+    return ph
+
+
 def rounded_card(c, x: float, y: float, w: float, h: float, radius: float = 4, stroke=COLORS["line"], fill=None, width: float = 0.7):
     c.saveState()
     c.setStrokeColor(stroke)
@@ -238,7 +245,9 @@ def draw_top_section(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_summary(c, data: dict[str, Any], y: float) -> float:
-    h = 28 * mm
+    text = data.get("edited_summary") or data.get("summary", "")
+    text_h = measure_para_height(text, CONTENT_W - 44 * mm, size=8.4, leading=10.6)
+    h = max(28 * mm, text_h + 11 * mm)
     x = MARGIN
     bottom = y - h
 
@@ -250,14 +259,26 @@ def draw_summary(c, data: dict[str, Any], y: float) -> float:
     c.setFont(FONT, 10)
     c.drawString(x + 21 * mm, bottom + h - 9 * mm, "総評")
 
-    text = data.get("edited_summary") or data.get("summary", "")
-    para(c, text, x + 38 * mm, bottom + 5 * mm, CONTENT_W - 44 * mm, h - 9 * mm, size=8.4, leading=10.2)
+    para(c, text, x + 38 * mm, bottom + 4.5 * mm, CONTENT_W - 44 * mm, h - 8.5 * mm, size=8.4, leading=10.6)
 
     return bottom - 1.2 * mm
 
 
 def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
-    h = 52 * mm
+    label_w = 34 * mm
+    comment_w = CONTENT_W - label_w - 8 * mm
+    rows = [
+        ("整理", "Seiri", data.get("seiri", {})),
+        ("整頓", "Seiton", data.get("seiton", {})),
+    ]
+    row_heights: list[float] = []
+    for _jp, _en, item in rows:
+        comment = item.get("comment", "")
+        comment_h = measure_para_height(comment, comment_w, size=7.9, leading=10.2)
+        row_heights.append(max(18 * mm, comment_h + 12 * mm))
+
+    card_h = sum(row_heights)
+    h = card_h + 8 * mm
     x = MARGIN
     bottom = y - h
 
@@ -268,23 +289,17 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
     c.drawString(x + 3 * mm, y - 5 * mm, "2S 診断詳細")
 
     card_y = bottom
-    card_h = h - 8 * mm
     rounded_card(c, x, card_y, CONTENT_W, card_h)
 
-    row_h = card_h / 2
-    rows = [
-        ("整理", "Seiri", data.get("seiri", {})),
-        ("整頓", "Seiton", data.get("seiton", {})),
-    ]
-
+    current_row_top = card_y + card_h
     for i, (jp, en, item) in enumerate(rows):
-        ry = card_y + row_h * (1 - i)
+        row_h = row_heights[i]
+        ry = current_row_top - row_h
 
         if i == 1:
             c.setStrokeColor(COLORS["line"])
-            c.line(x, ry + row_h, x + CONTENT_W, ry + row_h)
+            c.line(x, current_row_top, x + CONTENT_W, current_row_top)
 
-        label_w = 34 * mm
         c.setFillColor(COLORS["green_bg"])
         c.circle(x + 13 * mm, ry + row_h / 2, 8 * mm, stroke=0, fill=1)
 
@@ -307,13 +322,21 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
         c.drawString(tx, ry + row_h - 8 * mm, f"Grade：{score_grade}")
         c.drawString(tx + 32 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
 
-        para(c, comment, tx, ry + 4 * mm, CONTENT_W - label_w - 8 * mm, row_h - 14 * mm, size=7.9, leading=9.6)
+        para(c, comment, tx, ry + 3.5 * mm, CONTENT_W - label_w - 8 * mm, row_h - 13 * mm, size=7.9, leading=10.2)
+        current_row_top = ry
 
     return bottom - 1.2 * mm
 
 
 def draw_actions(c, data: dict[str, Any], y: float) -> float:
-    h = 38 * mm
+    actions = data.get("edited_actions") or data.get("actions", [])
+    actions = actions[:3] + [""] * max(0, 3 - len(actions))
+    action_w = CONTENT_W - 20 * mm
+    row_heights = [
+        max(9.5 * mm, measure_para_height(action, action_w, size=7.9, leading=10.0) + 4 * mm)
+        for action in actions[:3]
+    ]
+    h = 7 * mm + sum(row_heights) + 2 * mm
     x = MARGIN
     bottom = y - h
 
@@ -325,32 +348,29 @@ def draw_actions(c, data: dict[str, Any], y: float) -> float:
     c.setFont(FONT, 9.5)
     c.drawString(x + 4 * mm, bottom + h - 5 * mm, "すぐに実行できる改善アクション")
 
-    actions = data.get("edited_actions") or data.get("actions", [])
-    actions = actions[:3] + [""] * max(0, 3 - len(actions))
-
-    row_h = (h - 9 * mm) / 3
-    start_y = bottom + h - 9 * mm
-
+    current_row_top = bottom + h - 7 * mm - 1 * mm
     for i, action in enumerate(actions[:3]):
-        ry = start_y - (i + 1) * row_h
+        row_h = row_heights[i]
+        ry = current_row_top - row_h
 
         c.setFillColor(COLORS["navy"])
-        c.roundRect(x + 4 * mm, ry + row_h - 7 * mm, 5 * mm, 5 * mm, 1.5, stroke=0, fill=1)
+        c.roundRect(x + 4 * mm, ry + row_h - 6.5 * mm, 5 * mm, 5 * mm, 1.5, stroke=0, fill=1)
         c.setFillColor(colors.white)
         c.setFont(FONT, 8)
-        c.drawCentredString(x + 6.5 * mm, ry + row_h - 5.5 * mm, str(i + 1))
+        c.drawCentredString(x + 6.5 * mm, ry + row_h - 5 * mm, str(i + 1))
 
-        para(c, action, x + 14 * mm, ry + 1.5 * mm, CONTENT_W - 20 * mm, row_h - 2 * mm, size=7.9, leading=9.5)
+        para(c, action, x + 14 * mm, ry + 1.2 * mm, CONTENT_W - 20 * mm, row_h - 1.5 * mm, size=7.9, leading=10.0)
 
         if i < 2:
             c.setStrokeColor(COLORS["line"])
             c.line(x + 12 * mm, ry, x + CONTENT_W - 4 * mm, ry)
+        current_row_top = ry
 
     return bottom - 1.2 * mm
 
 
 def draw_learning(c, y: float) -> float:
-    h = 22 * mm
+    h = 20 * mm
     x = MARGIN
     bottom = y - h
 
@@ -388,6 +408,44 @@ def draw_learning(c, y: float) -> float:
         c.drawCentredString(qx + qr_w / 2, qy + 2 * mm, "コード")
 
     return bottom
+
+
+def ensure_space(c, data: dict[str, Any], y: float, needed_h: float) -> float:
+    if y - needed_h >= MARGIN:
+        return y
+    c.showPage()
+    return draw_header(c, data, PAGE_H - MARGIN)
+
+
+def estimate_summary_height(data: dict[str, Any]) -> float:
+    text = data.get("edited_summary") or data.get("summary", "")
+    text_h = measure_para_height(text, CONTENT_W - 44 * mm, size=8.4, leading=10.6)
+    return max(28 * mm, text_h + 11 * mm) + 1.2 * mm
+
+
+def estimate_2s_height(data: dict[str, Any]) -> float:
+    label_w = 34 * mm
+    comment_w = CONTENT_W - label_w - 8 * mm
+    total_rows_h = 0.0
+    for item in (data.get("seiri", {}), data.get("seiton", {})):
+        comment_h = measure_para_height(item.get("comment", ""), comment_w, size=7.9, leading=10.2)
+        total_rows_h += max(18 * mm, comment_h + 12 * mm)
+    return total_rows_h + 8 * mm + 1.2 * mm
+
+
+def estimate_actions_height(data: dict[str, Any]) -> float:
+    actions = data.get("edited_actions") or data.get("actions", [])
+    actions = actions[:3] + [""] * max(0, 3 - len(actions))
+    action_w = CONTENT_W - 20 * mm
+    total_rows_h = sum(
+        max(9.5 * mm, measure_para_height(action, action_w, size=7.9, leading=10.0) + 4 * mm)
+        for action in actions[:3]
+    )
+    return 7 * mm + total_rows_h + 2 * mm + 1.2 * mm
+
+
+def estimate_learning_height() -> float:
+    return 20 * mm
 
 
 def generate_pdf(
@@ -431,9 +489,13 @@ def generate_pdf(
     y = PAGE_H - MARGIN
     y = draw_header(c, data, y)
     y = draw_top_section(c, data, y)
+    y = ensure_space(c, data, y, estimate_summary_height(data))
     y = draw_summary(c, data, y)
+    y = ensure_space(c, data, y, estimate_2s_height(data))
     y = draw_2s_detail(c, data, y)
+    y = ensure_space(c, data, y, estimate_actions_height(data))
     y = draw_actions(c, data, y)
+    y = ensure_space(c, data, y, estimate_learning_height())
     draw_learning(c, y)
     c.showPage()
     c.save()
