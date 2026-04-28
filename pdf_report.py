@@ -107,24 +107,32 @@ def draw_summary_icon(c, x: float, y: float, w: float, h: float):
     c.setFillColor(COLORS["navy"])
     c.roundRect(x, y, w, h, 2, stroke=0, fill=1)
     c.setStrokeColor(colors.white)
-    c.setLineWidth(1.1)
-    bubble_x = x + 3.0 * mm
-    bubble_y = y + 3.3 * mm
-    bubble_w = w - 6.0 * mm
-    bubble_h = h - 7.0 * mm
-    c.roundRect(bubble_x, bubble_y, bubble_w, bubble_h, 1.6 * mm, stroke=1, fill=0)
-    tail = [
-        (bubble_x + 5.0 * mm, bubble_y),
-        (bubble_x + 7.3 * mm, bubble_y - 2.0 * mm),
-        (bubble_x + 8.6 * mm, bubble_y),
-    ]
+    c.setLineWidth(2.0)
     path = c.beginPath()
-    path.moveTo(*tail[0])
-    path.lineTo(*tail[1])
-    path.lineTo(*tail[2])
+    path.moveTo(x + 2.8 * mm, y + 6.0 * mm)
+    path.lineTo(x + 5.0 * mm, y + 3.6 * mm)
+    path.lineTo(x + 9.2 * mm, y + 8.6 * mm)
     c.drawPath(path, stroke=1, fill=0)
-    for dy in (bubble_y + bubble_h - 3.0 * mm, bubble_y + bubble_h - 5.5 * mm):
-        c.line(bubble_x + 2.0 * mm, dy, bubble_x + bubble_w - 2.0 * mm, dy)
+    c.restoreState()
+
+
+def draw_green_item_icon(c, cx: float, cy: float, kind: str):
+    c.saveState()
+    c.setFillColor(COLORS["green_bg"])
+    c.circle(cx, cy, 8 * mm if kind in {"seiri", "seiton"} else 6 * mm, stroke=0, fill=1)
+    c.setStrokeColor(COLORS["green"])
+    c.setLineWidth(1.0)
+    if kind == "seiri":
+        c.roundRect(cx - 4.2 * mm, cy - 1.5 * mm, 8.4 * mm, 4.8 * mm, 1.2 * mm, stroke=1, fill=0)
+        c.line(cx - 2.4 * mm, cy + 3.8 * mm, cx + 2.4 * mm, cy + 3.8 * mm)
+        c.line(cx - 1.6 * mm, cy + 3.8 * mm, cx - 1.6 * mm, cy + 4.8 * mm)
+        c.line(cx + 1.6 * mm, cy + 3.8 * mm, cx + 1.6 * mm, cy + 4.8 * mm)
+    elif kind == "seiton":
+        c.rect(cx - 4.2 * mm, cy - 2.6 * mm, 8.4 * mm, 6.2 * mm, stroke=1, fill=0)
+        c.line(cx - 4.2 * mm, cy + 0.6 * mm, cx + 4.2 * mm, cy + 0.6 * mm)
+        c.line(cx, cy + 0.6 * mm, cx, cy + 3.6 * mm)
+        c.circle(cx - 1.8 * mm, cy + 2.0 * mm, 0.5 * mm, stroke=1, fill=0)
+        c.circle(cx + 1.8 * mm, cy + 2.0 * mm, 0.5 * mm, stroke=1, fill=0)
     c.restoreState()
 
 
@@ -325,8 +333,8 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
             c.setStrokeColor(COLORS["line"])
             c.line(x, current_row_top, x + CONTENT_W, current_row_top)
 
-        c.setFillColor(COLORS["green_bg"])
-        c.circle(x + 13 * mm, ry + row_h / 2, 8 * mm, stroke=0, fill=1)
+        icon_kind = "seiri" if i == 0 else "seiton"
+        draw_green_item_icon(c, x + 13 * mm, ry + row_h / 2, icon_kind)
 
         c.setFillColor(COLORS["green"])
         c.setFont(FONT, 10)
@@ -397,7 +405,7 @@ def draw_actions(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_learning(c, y: float) -> float:
-    h = 24 * mm
+    h = 28 * mm
     x = MARGIN
     bottom = y - h
 
@@ -412,27 +420,27 @@ def draw_learning(c, y: float) -> float:
 
     for i, (label, _qr) in enumerate(items):
         cx = x + col_w * i + 4 * mm
-        cy = bottom + 2.5 * mm
+        cy = bottom + 3.0 * mm
         cw = col_w - 8 * mm
-        ch = 12 * mm
+        ch = 14 * mm
 
         rounded_card(c, cx, cy, cw, ch, radius=3, stroke=colors.white, fill=colors.white)
-        c.setFillColor(COLORS["green_bg"])
-        c.circle(cx + 10 * mm, cy + ch / 2, 6 * mm, stroke=0, fill=1)
+        icon_kind = "seiri" if i == 0 else "seiton"
+        draw_green_item_icon(c, cx + 10 * mm, cy + ch / 2, icon_kind)
 
         c.setFillColor(COLORS["green"])
         c.setFont(FONT, 9)
-        c.drawString(cx + 22 * mm, cy + 6.5 * mm, label.split("\n")[0])
-        c.drawString(cx + 22 * mm, cy + 2.5 * mm, label.split("\n")[1])
+        c.drawString(cx + 22 * mm, cy + 8.0 * mm, label.split("\n")[0])
+        c.drawString(cx + 22 * mm, cy + 3.6 * mm, label.split("\n")[1])
 
-        qr_w = 21 * mm
+        qr_w = 24 * mm
         qx = cx + cw - qr_w - 4 * mm
-        qy = cy + 1.2 * mm
-        rounded_card(c, qx, qy, qr_w, ch - 2.4 * mm, radius=2)
+        qy = cy + 0.8 * mm
+        rounded_card(c, qx, qy, qr_w, ch - 1.6 * mm, radius=2)
         c.setFillColor(COLORS["text"])
         c.setFont(FONT, 8.2)
-        c.drawCentredString(qx + qr_w / 2, qy + 6.3 * mm, "QR")
-        c.drawCentredString(qx + qr_w / 2, qy + 2.6 * mm, "コード")
+        c.drawCentredString(qx + qr_w / 2, qy + 7.6 * mm, "QR")
+        c.drawCentredString(qx + qr_w / 2, qy + 3.4 * mm, "コード")
 
     return bottom
 
@@ -472,7 +480,7 @@ def estimate_actions_height(data: dict[str, Any]) -> float:
 
 
 def estimate_learning_height() -> float:
-    return 24 * mm
+    return 28 * mm
 
 
 def generate_pdf(
