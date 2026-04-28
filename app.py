@@ -1968,18 +1968,43 @@ def main(mode: str | None = None):
               const guideLink = document.getElementById("heic-guide-link");
               guideLink.addEventListener("click", function(event) {{
                 event.preventDefault();
-                const parts = guideDataUrl.split(",");
-                const mimeMatch = parts[0].match(/data:(.*?);base64/);
-                const mime = mimeMatch ? mimeMatch[1] : "image/png";
-                const byteString = atob(parts[1]);
-                const byteNumbers = new Array(byteString.length);
-                for (let i = 0; i < byteString.length; i += 1) {{
-                  byteNumbers[i] = byteString.charCodeAt(i);
-                }}
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], {{ type: mime }});
-                const blobUrl = URL.createObjectURL(blob);
-                window.open(blobUrl, "_blank", "noopener,noreferrer");
+                const guideWindow = window.open("", "_blank", "noopener,noreferrer");
+                if (!guideWindow) return;
+                guideWindow.document.open();
+                guideWindow.document.write(`
+                  <!doctype html>
+                  <html lang="ja">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>画像アップ時の注意点</title>
+                    <style>
+                      body {{
+                        margin: 0;
+                        padding: 24px;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                        background: #ffffff;
+                        color: #1e293b;
+                      }}
+                      h1 {{
+                        margin: 0 0 16px 0;
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #0B2E5F;
+                      }}
+                      img {{
+                        display: block;
+                        width: 100%;
+                        height: auto;
+                      }}
+                    </style>
+                  </head>
+                  <body>
+                    <h1>画像アップ時の注意点</h1>
+                    <img src="${{guideDataUrl}}" alt="画像アップ時の注意点">
+                  </body>
+                  </html>
+                `);
+                guideWindow.document.close();
               }});
             </script>
             """,
