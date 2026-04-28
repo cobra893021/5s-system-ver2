@@ -136,6 +136,44 @@ def draw_green_item_icon(c, cx: float, cy: float, kind: str):
     c.restoreState()
 
 
+def draw_cap_icon(c, x: float, y: float, size: float = 7 * mm):
+    c.saveState()
+    c.setFillColor(COLORS["navy"])
+    top_y = y + size * 0.75
+    points = [
+        (x, top_y),
+        (x + size * 0.5, y + size),
+        (x + size, top_y),
+        (x + size * 0.5, y + size * 0.5),
+    ]
+    path = c.beginPath()
+    path.moveTo(*points[0])
+    for pt in points[1:]:
+        path.lineTo(*pt)
+    path.close()
+    c.drawPath(path, stroke=0, fill=1)
+    c.rect(x + size * 0.28, y + size * 0.38, size * 0.44, size * 0.10, stroke=0, fill=1)
+    c.setStrokeColor(COLORS["navy"])
+    c.setLineWidth(1.0)
+    c.line(x + size * 0.82, top_y, x + size * 0.82, y + size * 0.25)
+    c.circle(x + size * 0.82, y + size * 0.18, size * 0.04, stroke=1, fill=0)
+    c.restoreState()
+
+
+def draw_qr_placeholder(c, x: float, y: float, w: float, h: float):
+    c.saveState()
+    c.setStrokeColor(COLORS["line"])
+    c.setLineWidth(1.0)
+    c.setDash(1.6, 1.6)
+    c.roundRect(x, y, w, h, 2, stroke=1, fill=0)
+    c.setDash()
+    c.setFillColor(COLORS["text"])
+    c.setFont(FONT, 8.4)
+    c.drawCentredString(x + w / 2, y + h * 0.60, "QR")
+    c.drawCentredString(x + w / 2, y + h * 0.32, "コード")
+    c.restoreState()
+
+
 def navy_label(c, x: float, y: float, text: str, w: float = 32 * mm, h: float = 6 * mm):
     c.saveState()
     c.setFillColor(COLORS["navy"])
@@ -298,7 +336,7 @@ def draw_summary(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
-    label_w = 34 * mm
+    label_w = 56 * mm
     comment_w = CONTENT_W - label_w - 8 * mm
     rows = [
         ("整理", "Seiri", data.get("seiri", {})),
@@ -334,13 +372,16 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
             c.line(x, current_row_top, x + CONTENT_W, current_row_top)
 
         icon_kind = "seiri" if i == 0 else "seiton"
-        draw_green_item_icon(c, x + 13 * mm, ry + row_h / 2, icon_kind)
+        icon_cx = x + 13 * mm
+        icon_cy = ry + row_h / 2
+        draw_green_item_icon(c, icon_cx, icon_cy, icon_kind)
 
+        label_x = x + 24.5 * mm
         c.setFillColor(COLORS["green"])
-        c.setFont(FONT, 10)
-        c.drawCentredString(x + 13 * mm, ry + row_h / 2 + 1 * mm, jp)
-        c.setFont(FONT, 7.5)
-        c.drawCentredString(x + 13 * mm, ry + row_h / 2 - 4 * mm, f"({en})")
+        c.setFont(FONT, 11.5)
+        c.drawString(label_x, ry + row_h / 2 + 3.4 * mm, jp)
+        c.setFont(FONT, 8.8)
+        c.drawString(label_x, ry + row_h / 2 - 4.3 * mm, f"({en})")
 
         c.setStrokeColor(COLORS["line"])
         c.line(x + label_w, ry + 3 * mm, x + label_w, ry + row_h - 3 * mm)
@@ -354,7 +395,7 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
         c.setFillColor(COLORS["navy"])
         c.drawString(tx, ry + row_h - 8 * mm, f"Grade：{score_grade}")
         c.setFillColor(COLORS["sub"])
-        c.drawString(tx + 24 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
+        c.drawString(tx + 22 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
         c.setFillColor(COLORS["text"])
 
         para(c, comment, tx, ry + 3.5 * mm, CONTENT_W - label_w - 8 * mm, row_h - 13 * mm, size=7.9, leading=10.2)
@@ -405,42 +446,50 @@ def draw_actions(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_learning(c, y: float) -> float:
-    h = 28 * mm
+    h = 32 * mm
     x = MARGIN
     bottom = y - h
 
     rounded_card(c, x, bottom, CONTENT_W, h, fill=COLORS["light_bg"], stroke=colors.white)
 
+    draw_cap_icon(c, x + 4 * mm, bottom + h - 8.6 * mm, size=6.8 * mm)
     c.setFillColor(COLORS["navy"])
-    c.setFont(FONT, 9.5)
-    c.drawString(x + 4 * mm, bottom + h - 6 * mm, "2S（整理、整頓）の具体的なやり方を学ぶ")
+    c.setFont(FONT, 10)
+    c.drawString(x + 13.5 * mm, bottom + h - 5.8 * mm, "2S（整理、整頓）の具体的なやり方を学ぶ")
 
     col_w = CONTENT_W / 2
     items = [("整理についての\n動画を見る", "QR\nコード"), ("整頓についての\n動画を見る", "QR\nコード")]
 
+    cards_y = bottom + 3.2 * mm
+    cards_h = 16.5 * mm
+
     for i, (label, _qr) in enumerate(items):
         cx = x + col_w * i + 4 * mm
-        cy = bottom + 3.0 * mm
+        cy = cards_y
         cw = col_w - 8 * mm
-        ch = 14 * mm
+        ch = cards_h
 
         rounded_card(c, cx, cy, cw, ch, radius=3, stroke=colors.white, fill=colors.white)
         icon_kind = "seiri" if i == 0 else "seiton"
-        draw_green_item_icon(c, cx + 10 * mm, cy + ch / 2, icon_kind)
+        draw_green_item_icon(c, cx + 12.5 * mm, cy + ch / 2, icon_kind)
 
         c.setFillColor(COLORS["green"])
-        c.setFont(FONT, 9)
-        c.drawString(cx + 22 * mm, cy + 8.0 * mm, label.split("\n")[0])
-        c.drawString(cx + 22 * mm, cy + 3.6 * mm, label.split("\n")[1])
+        c.setFont(FONT, 10.6)
+        c.drawString(cx + 25 * mm, cy + 9.2 * mm, label.split("\n")[0])
+        c.drawString(cx + 25 * mm, cy + 4.2 * mm, label.split("\n")[1])
 
         qr_w = 24 * mm
+        qr_h = ch - 1.6 * mm
         qx = cx + cw - qr_w - 4 * mm
-        qy = cy + 0.8 * mm
-        rounded_card(c, qx, qy, qr_w, ch - 1.6 * mm, radius=2)
-        c.setFillColor(COLORS["text"])
-        c.setFont(FONT, 8.2)
-        c.drawCentredString(qx + qr_w / 2, qy + 7.6 * mm, "QR")
-        c.drawCentredString(qx + qr_w / 2, qy + 3.4 * mm, "コード")
+        qy = cy + (ch - qr_h) / 2
+        draw_qr_placeholder(c, qx, qy, qr_w, qr_h)
+
+        if i == 0:
+            c.saveState()
+            c.setStrokeColor(COLORS["line"])
+            c.setLineWidth(0.9)
+            c.line(x + col_w, cy + 1.6 * mm, x + col_w, cy + ch - 1.6 * mm)
+            c.restoreState()
 
     return bottom
 
@@ -459,7 +508,7 @@ def estimate_summary_height(data: dict[str, Any]) -> float:
 
 
 def estimate_2s_height(data: dict[str, Any]) -> float:
-    label_w = 34 * mm
+    label_w = 48 * mm
     comment_w = CONTENT_W - label_w - 8 * mm
     total_rows_h = 0.0
     for item in (data.get("seiri", {}), data.get("seiton", {})):
@@ -480,7 +529,7 @@ def estimate_actions_height(data: dict[str, Any]) -> float:
 
 
 def estimate_learning_height() -> float:
-    return 28 * mm
+    return 30 * mm
 
 
 def generate_pdf(
