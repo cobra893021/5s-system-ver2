@@ -22,7 +22,7 @@ pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5'))
 FONT = 'HeiseiKakuGo-W5'
 
 PAGE_W, PAGE_H = A4
-MARGIN = 20 * mm
+MARGIN = 12 * mm
 
 PRIMARY = colors.HexColor('#346D99')
 LIGHT_BG = colors.HexColor('#EEF5FB')
@@ -37,24 +37,24 @@ PDF_IMAGE_QUALITY = 58
 def _styles():
     return {
         'title': ParagraphStyle(
-            'title', fontName=FONT, fontSize=18,
-            textColor=PRIMARY, spaceAfter=6, spaceBefore=0
+            'title', fontName=FONT, fontSize=17,
+            textColor=PRIMARY, spaceAfter=4, spaceBefore=0
         ),
         'subtitle': ParagraphStyle(
-            'subtitle', fontName=FONT, fontSize=8,
-            textColor=GRAY, spaceAfter=10
+            'subtitle', fontName=FONT, fontSize=7,
+            textColor=GRAY, spaceAfter=6
         ),
         'section': ParagraphStyle(
-            'section', fontName=FONT, fontSize=11,
-            textColor=PRIMARY, spaceBefore=8, spaceAfter=4,
+            'section', fontName=FONT, fontSize=10,
+            textColor=PRIMARY, spaceBefore=5, spaceAfter=3,
             fontWeight='bold'
         ),
         'box_text': ParagraphStyle(
-            'box_text', fontName=FONT, fontSize=8,
-            textColor=DARK, leading=14, spaceAfter=0
+            'box_text', fontName=FONT, fontSize=7.5,
+            textColor=DARK, leading=12, spaceAfter=0
         ),
         'small': ParagraphStyle(
-            'small', fontName=FONT, fontSize=7,
+            'small', fontName=FONT, fontSize=6.5,
             textColor=GRAY, spaceAfter=2
         ),
         'score': ParagraphStyle(
@@ -70,27 +70,27 @@ def _styles():
             textColor=colors.white, alignment=0
         ),
         'label_white': ParagraphStyle(
-            'label_white', fontName=FONT, fontSize=9,
+            'label_white', fontName=FONT, fontSize=8.5,
             textColor=colors.white
         ),
         'summary_text': ParagraphStyle(
-            'summary_text', fontName=FONT, fontSize=9,
-            textColor=DARK, leading=16
+            'summary_text', fontName=FONT, fontSize=8.5,
+            textColor=DARK, leading=14
         ),
         'detail_text': ParagraphStyle(
-            'detail_text', fontName=FONT, fontSize=8.5,
-            textColor=DARK, leading=14
+            'detail_text', fontName=FONT, fontSize=8,
+            textColor=DARK, leading=12
         ),
         'grade_small': ParagraphStyle(
             'grade_small', fontName=FONT, fontSize=8.5,
             textColor=GRAY
         ),
         'grade_desc': ParagraphStyle(
-            'grade_desc', fontName=FONT, fontSize=8.5,
-            textColor=DARK, leading=13
+            'grade_desc', fontName=FONT, fontSize=7.6,
+            textColor=DARK, leading=11
         ),
         'qr_label': ParagraphStyle(
-            'qr_label', fontName=FONT, fontSize=8.5,
+            'qr_label', fontName=FONT, fontSize=8,
             textColor=DARK, alignment=1
         ),
     }
@@ -131,10 +131,10 @@ def _box(text: str, style, bg: colors.Color = LIGHT_BG, width_mm: float = 170) -
     t.setStyle(TableStyle([
         ('BOX', (0, 0), (-1, -1), 0.5, BORDER),
         ('BACKGROUND', (0, 0), (-1, -1), bg),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
         ('ROWBACKGROUNDS', (0, 0), (-1, -1), [bg]),
     ]))
     return t
@@ -168,13 +168,13 @@ def _prepare_pdf_image(image_bytes: bytes) -> tuple[io.BytesIO, float, float] | 
     pil = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
     pil.thumbnail((PDF_IMAGE_MAX_W_PX, PDF_IMAGE_MAX_H_PX), PILImage.LANCZOS)
 
-    max_w = 82 * mm
+    max_w = 80 * mm
     ratio = max_w / pil.width
     new_h = pil.height * ratio
-    if new_h > 92 * mm:
-        ratio = (92 * mm) / pil.height
+    if new_h > 84 * mm:
+        ratio = (84 * mm) / pil.height
         max_w = pil.width * ratio
-        new_h = 92 * mm
+        new_h = 84 * mm
 
     img_buf = io.BytesIO()
     pil.save(
@@ -216,7 +216,7 @@ def generate_pdf(
     meta = f"診断日：{now_str}　　会社名：{company or '未入力'}　　部門：{location or '未入力'}"
     story.append(Paragraph(meta, s['subtitle']))
     story.append(HRFlowable(width="100%", color=PRIMARY, thickness=1.5))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     # ── 写真 ＋ Grade 評価 ──
     overall = result.get("overall_score", 0)
@@ -234,13 +234,13 @@ def generate_pdf(
             style=TableStyle([
                 ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
                 ('BOX', (0, 0), (-1, -1), 0.5, PRIMARY),
-                ('LEFTPADDING', (0, 0), (-1, -1), 6),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-                ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
             ])
         ),
-        Spacer(1, 4),
+        Spacer(1, 3),
     ]
     if img_el:
         image_card_parts.append(img_el)
@@ -250,10 +250,10 @@ def generate_pdf(
     image_card.setStyle(TableStyle([
         ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
 
@@ -264,10 +264,10 @@ def generate_pdf(
             style=TableStyle([
                 ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
                 ('BOX', (0, 0), (-1, -1), 0.5, PRIMARY),
-                ('LEFTPADDING', (0, 0), (-1, -1), 6),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-                ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
             ])
         )
     ]]
@@ -289,8 +289,8 @@ def generate_pdf(
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('LEFTPADDING', (0, 0), (-1, -1), 0),
             ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
             ('LINEBELOW', (0, 0), (-1, -1), 0.4, BORDER if idx < len(GRADE_DEFINITIONS) - 1 else colors.white),
         ]
         if is_selected:
@@ -304,10 +304,10 @@ def generate_pdf(
     grade_card.setStyle(TableStyle([
         ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
 
     top_table = Table([[image_card, grade_card]], colWidths=[85 * mm, 85 * mm])
@@ -319,13 +319,13 @@ def generate_pdf(
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
     story.append(top_table)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 5))
 
     # ── 総評 ──
     summary = edited_summary or str(result.get("summary") or "")
     story.append(Paragraph("■ 総評", s['section']))
     story.append(_box(summary, s['summary_text']))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     # ── 2S診断詳細 ──
     story.append(Paragraph("■ 2S 診断詳細", s['section']))
@@ -348,8 +348,8 @@ def generate_pdf(
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('LEFTPADDING', (0, 0), (-1, -1), 4),
             ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ]))
         meta = Paragraph(
             f"Grade：{item_grade}　　優先度：{priority}<br/>{comment}",
@@ -362,13 +362,13 @@ def generate_pdf(
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
         ('LINEBELOW', (0, 0), (-1, 0), 0.4, BORDER),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
     story.append(detail_table)
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     # ── 改善アクション ──
     actions = edited_actions or result.get("action_items") or []
@@ -394,21 +394,21 @@ def generate_pdf(
             ('BACKGROUND', (0, 0), (-1, -1), colors.white),
             ('LINEBELOW', (0, 0), (-1, -2), 0.4, BORDER),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]))
         story.append(action_table)
 
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 5))
 
     # ── 2S 学習セクション ──
     story.append(Paragraph("■ 2S（整理、整頓）の具体的なやり方を学ぶ", s['section']))
     qr_cell = Table(
         [[Paragraph("QRコード", s['qr_label'])]],
         colWidths=[22 * mm],
-        rowHeights=[22 * mm],
+        rowHeights=[18 * mm],
     )
     qr_cell.setStyle(TableStyle([
         ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
@@ -428,19 +428,19 @@ def generate_pdf(
         ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     learn_right.setStyle(TableStyle([
         ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
         ('BACKGROUND', (0, 0), (-1, -1), colors.white),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     learn_table = Table([[learn_left, learn_right]], colWidths=[85 * mm, 85 * mm])
     learn_table.setStyle(TableStyle([
