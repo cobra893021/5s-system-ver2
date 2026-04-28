@@ -764,7 +764,7 @@ def generate_pdf(
     c.setStrokeColor(NAVY)
     c.setLineWidth(1.8)
     c.line(page_x, current_top - header_h, page_x + page_w, current_top - header_h)
-    current_top -= header_h + (2 * mm)
+    current_top -= header_h + (1.5 * mm)
 
     # Top section
     gap = 3.5 * mm
@@ -826,21 +826,21 @@ def generate_pdf(
             ParagraphStyle(
                 "grade_desc_fixed",
                 fontName=FONT,
-                fontSize=7.2,
-                leading=10,
+                fontSize=6.9,
+                leading=8.8,
                 textColor=DARK,
             ),
             grade_inner_x + left_col_w + 6,
-            row_y + row_h - 5,
+            row_y + row_h - 4,
             grade_inner_w - left_col_w - 12,
-            row_h - 10,
+            row_h - 8,
         )
         row_top = row_y - row_gap
 
-    current_top = top_y - (2.6 * mm)
+    current_top = top_y - (1.8 * mm)
 
     # Summary
-    summary_h = 22 * mm
+    summary_h = 28 * mm
     summary_y = current_top - summary_h
     _draw_round_card(c, page_x, summary_y, page_w, summary_h, radius=7, stroke=LINE, line_width=0.9)
     draw_card_header("総評", page_x, current_top - 1.5, page_w)
@@ -849,19 +849,19 @@ def generate_pdf(
         ParagraphStyle(
             "summary_fixed",
             fontName=FONT,
-            fontSize=8.5,
-            leading=12,
+            fontSize=8.4,
+            leading=11.5,
             textColor=DARK,
         ),
         page_x + 8,
-        summary_y + summary_h - 12,
+        summary_y + summary_h - 11,
         page_w - 16,
-        summary_h - 16,
+        summary_h - 14,
     )
-    current_top = summary_y - (2.4 * mm)
+    current_top = summary_y - (1.8 * mm)
 
     # Detail
-    detail_h = 32 * mm
+    detail_h = 42 * mm
     detail_y = current_top - detail_h
     _draw_round_card(c, page_x, detail_y, page_w, detail_h, radius=7, stroke=LINE, line_width=0.9)
     draw_card_header("2S 診断詳細", page_x, current_top - 1.5, page_w)
@@ -887,27 +887,27 @@ def generate_pdf(
         meta_x = page_x + 8 + label_w + 8
         c.setFillColor(NAVY)
         c.setFont(FONT, 8)
-        c.drawString(meta_x, row_y + detail_row_h - 10, f"Grade：{item_grade}")
-        c.drawString(meta_x + 32 * mm, row_y + detail_row_h - 10, f"優先度：{priority}")
+        c.drawString(meta_x, row_y + detail_row_h - 9, f"Grade：{item_grade}")
+        c.drawString(meta_x + 32 * mm, row_y + detail_row_h - 9, f"優先度：{priority}")
         draw_para(
             comment,
             ParagraphStyle(
                 "detail_fixed",
                 fontName=FONT,
-                fontSize=8,
-                leading=10.5,
+                fontSize=7.9,
+                leading=10.4,
                 textColor=DARK,
             ),
             meta_x,
-            row_y + detail_row_h - 14,
+            row_y + detail_row_h - 13,
             page_w - (meta_x - page_x) - 10,
-            detail_row_h - 16,
+            detail_row_h - 14,
         )
         detail_top = row_y
-    current_top = detail_y - (2.4 * mm)
+    current_top = detail_y - (1.8 * mm)
 
     # Actions
-    action_h = 28 * mm
+    action_h = 34 * mm
     action_y = current_top - action_h
     _draw_round_card(c, page_x, action_y, page_w, action_h, radius=7, stroke=LINE, line_width=0.9)
     bar_h = 7 * mm
@@ -937,8 +937,8 @@ def generate_pdf(
             ParagraphStyle(
                 "action_fixed",
                 fontName=FONT,
-                fontSize=8,
-                leading=10.5,
+                fontSize=7.9,
+                leading=10.2,
                 textColor=DARK,
             ),
             no_x + 18,
@@ -947,10 +947,10 @@ def generate_pdf(
             action_row_h - 4,
         )
         action_top = row_y
-    current_top = action_y - (2.4 * mm)
+    current_top = action_y - (1.8 * mm)
 
     # Learning
-    learning_h = 22 * mm
+    learning_h = 26 * mm
     learning_y = current_top - learning_h
     _draw_round_card(c, page_x, learning_y, page_w, learning_h, radius=7, stroke=LINE, line_width=0.9)
     draw_card_header("2S（整理、整頓）の具体的なやり方を学ぶ", page_x, current_top - 1.5, page_w)
@@ -962,13 +962,13 @@ def generate_pdf(
         _draw_round_card(c, lx, learn_y, learn_w, learning_h - 12, radius=5, stroke=colors.HexColor("#D9E1EC"), line_width=0.8)
         c.setFillColor(colors.HexColor("#2F855A"))
         c.setFont(FONT, 9)
-        c.drawString(lx + 8, learn_y + (learning_h - 12) / 2, label)
+        c.drawString(lx + 8, learn_y + (learning_h - 12) / 2 + 1, label)
         c.setStrokeColor(LINE)
-        c.roundRect(lx + learn_w - 18 * mm, learn_y + 4, 14 * mm, learning_h - 20, 4, stroke=1, fill=0)
+        c.roundRect(lx + learn_w - 18 * mm, learn_y + 5, 14 * mm, learning_h - 22, 4, stroke=1, fill=0)
         c.setFillColor(GRAY)
         c.setFont(FONT, 8)
-        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 + 3, "QR")
-        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 - 6, "コード")
+        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 + 4, "QR")
+        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 - 5, "コード")
 
     c.showPage()
     c.save()
