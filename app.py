@@ -3,6 +3,7 @@ import base64
 import hashlib
 import html
 import io
+import json
 import os
 import uuid
 from datetime import datetime
@@ -1946,9 +1947,21 @@ def main(mode: str | None = None):
     heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
     if local_heic_guide_url:
+        local_heic_guide_page = (
+            "<!doctype html><html><head><meta charset='utf-8'>"
+            "<title>画像形式案内</title>"
+            "<style>"
+            "html,body{margin:0;padding:0;background:#ffffff;}"
+            "img{display:block;width:100%;height:auto;}"
+            "</style></head><body>"
+            f"<img src=\"{html.escape(local_heic_guide_url, quote=True)}\" alt=\"画像形式案内\">"
+            "</body></html>"
+        )
+        local_heic_guide_page_js = json.dumps(local_heic_guide_page, ensure_ascii=False)
         heic_notice_html = f"""
-        <a href="{html.escape(local_heic_guide_url, quote=True)}" target="_blank"
-           rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">
+        <a href="#"
+           onclick='event.preventDefault(); const guideWindow = window.open("", "_blank"); if (guideWindow) {{ guideWindow.document.open(); guideWindow.document.write({local_heic_guide_page_js}); guideWindow.document.close(); }}'
+           style="color:#dc2626; font-weight:800; text-decoration:underline;">
           {heic_notice}
         </a>
         """
