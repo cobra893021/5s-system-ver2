@@ -298,17 +298,14 @@ def _build_report_html(
           color: #1e293b;
           font-family: "Noto Sans CJK JP", "Hiragino Sans", "Yu Gothic", sans-serif;
           font-size: 11px;
-          line-height: 1.45;
+          line-height: 1.5;
         }}
         body {{
           width: 100%;
         }}
         .report {{
           width: 100%;
-          min-height: 100%;
-          border: 1px solid #D9E1EC;
-          border-radius: 10px;
-          padding: 6px 8px 8px;
+          padding: 4px 6px 6px;
           background: #fff;
         }}
         .header {{
@@ -354,7 +351,8 @@ def _build_report_html(
         .top-section {{
           display: flex;
           gap: 10px;
-          margin-top: 8px;
+          margin-top: 6px;
+          margin-bottom: 10px;
         }}
         .photo-card,
         .grade-card {{
@@ -372,15 +370,14 @@ def _build_report_html(
           font-size: 9px;
           font-weight: 700;
           border-radius: 6px;
-          padding: 4px 10px;
-          margin-bottom: 8px;
+          padding: 3px 9px;
+          margin-bottom: 6px;
         }}
         .photo-frame {{
           width: 100%;
           height: 245px;
           border: 1px solid #D9E1EC;
           border-radius: 8px;
-          overflow: hidden;
           background: #fff;
           display: flex;
           align-items: center;
@@ -445,34 +442,33 @@ def _build_report_html(
           border: 1px solid #C9D3E3;
           border-radius: 10px;
           background: #fff;
-          margin-top: 8px;
-          overflow: hidden;
+          margin-top: 10px;
         }}
         .card-header {{
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 7px 10px 0;
+          padding: 6px 10px 0;
           color: #0B2E5F;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 700;
         }}
         .card-body {{
-          padding: 6px 10px 10px;
+          padding: 5px 10px 8px;
         }}
         .summary-text {{
-          font-size: 10px;
-          line-height: 1.55;
+          font-size: 9.2px;
+          line-height: 1.5;
           color: #1e293b;
         }}
         .detail-card .card-body {{
-          padding-top: 4px;
+          padding-top: 3px;
         }}
         .detail-row {{
           display: grid;
           grid-template-columns: 94px 1fr;
           gap: 10px;
-          padding: 8px 0;
+          padding: 6px 0;
           border-top: 1px solid #E3EAF4;
         }}
         .detail-row:first-child {{
@@ -483,31 +479,31 @@ def _build_report_html(
           border: 1px solid #C9D3E3;
           border-radius: 999px;
           color: #2F855A;
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
-          padding: 8px;
-          min-height: 42px;
+          padding: 6px;
+          min-height: 36px;
         }}
         .detail-meta {{
           color: #0B2E5F;
           font-size: 9px;
           font-weight: 700;
-          margin-bottom: 2px;
+          margin-bottom: 1px;
         }}
         .detail-text {{
           font-size: 9px;
-          line-height: 1.45;
+          line-height: 1.5;
           color: #1e293b;
           word-break: break-word;
         }}
         .action-card .card-header.bar {{
           background: #0B2E5F;
           color: #fff;
-          padding: 7px 10px;
+          padding: 6px 10px;
           margin: 0;
           display: block;
         }}
@@ -518,7 +514,7 @@ def _build_report_html(
           display: grid;
           grid-template-columns: 18px 1fr;
           gap: 10px;
-          padding: 8px 0;
+          padding: 7px 0;
           border-top: 1px solid #E3EAF4;
         }}
         .action-row:first-child {{
@@ -539,12 +535,12 @@ def _build_report_html(
         }}
         .action-text {{
           font-size: 9px;
-          line-height: 1.45;
+          line-height: 1.5;
           color: #1e293b;
           word-break: break-word;
         }}
         .learning-card .card-body {{
-          padding-top: 4px;
+          padding-top: 3px;
         }}
         .learning-grid {{
           display: flex;
@@ -554,28 +550,28 @@ def _build_report_html(
           width: 50%;
           border: 1px solid #D9E1EC;
           border-radius: 8px;
-          padding: 10px;
+          padding: 8px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          min-height: 72px;
+          min-height: 58px;
         }}
         .learning-label {{
           color: #2F855A;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
-          line-height: 1.35;
+          line-height: 1.25;
         }}
         .qr-box {{
-          width: 54px;
-          height: 54px;
+          width: 46px;
+          height: 46px;
           border: 1px solid #C9D3E3;
           border-radius: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #475569;
-          font-size: 9px;
+          font-size: 8px;
           text-align: center;
           line-height: 1.2;
           background: #fff;
