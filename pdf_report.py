@@ -28,6 +28,7 @@ PRIMARY = colors.HexColor('#346D99')
 LIGHT_BG = colors.HexColor('#EEF5FB')
 GRAY = colors.HexColor('#475569')
 DARK = colors.HexColor('#1e293b')
+BORDER = colors.HexColor('#cbd5e1')
 PDF_IMAGE_MAX_W_PX = 1280
 PDF_IMAGE_MAX_H_PX = 960
 PDF_IMAGE_QUALITY = 58
@@ -36,12 +37,12 @@ PDF_IMAGE_QUALITY = 58
 def _styles():
     return {
         'title': ParagraphStyle(
-            'title', fontName=FONT, fontSize=16,
-            textColor=PRIMARY, spaceAfter=8, spaceBefore=0
+            'title', fontName=FONT, fontSize=18,
+            textColor=PRIMARY, spaceAfter=6, spaceBefore=0
         ),
         'subtitle': ParagraphStyle(
             'subtitle', fontName=FONT, fontSize=8,
-            textColor=GRAY, spaceAfter=16
+            textColor=GRAY, spaceAfter=10
         ),
         'section': ParagraphStyle(
             'section', fontName=FONT, fontSize=11,
@@ -64,21 +65,77 @@ def _styles():
             'footer', fontName=FONT, fontSize=7,
             textColor=GRAY
         ),
+        'grade_title': ParagraphStyle(
+            'grade_title', fontName=FONT, fontSize=10,
+            textColor=colors.white, alignment=0
+        ),
+        'label_white': ParagraphStyle(
+            'label_white', fontName=FONT, fontSize=9,
+            textColor=colors.white
+        ),
+        'summary_text': ParagraphStyle(
+            'summary_text', fontName=FONT, fontSize=9,
+            textColor=DARK, leading=16
+        ),
+        'detail_text': ParagraphStyle(
+            'detail_text', fontName=FONT, fontSize=8.5,
+            textColor=DARK, leading=14
+        ),
+        'grade_small': ParagraphStyle(
+            'grade_small', fontName=FONT, fontSize=8.5,
+            textColor=GRAY
+        ),
+        'grade_desc': ParagraphStyle(
+            'grade_desc', fontName=FONT, fontSize=8.5,
+            textColor=DARK, leading=13
+        ),
+        'qr_label': ParagraphStyle(
+            'qr_label', fontName=FONT, fontSize=8.5,
+            textColor=DARK, alignment=1
+        ),
     }
 
 
-def _box(text: str, style) -> Table:
+GRADE_DEFINITIONS = [
+    (
+        "A",
+        "とても良好",
+        "2S（整理、整頓）が高いレベルであり、ムダが少ない現場です。<br/>維持管理（習慣化）が課題となります。",
+        colors.HexColor("#2563eb"),
+    ),
+    (
+        "B",
+        "良好",
+        "大きな問題は少ないものの、一部に改善余地があります。<br/>改善を行い、現場の収益力を高めましょう。",
+        colors.HexColor("#16a34a"),
+    ),
+    (
+        "C",
+        "要改善",
+        "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。<br/>改善を行うことで10％程度の生産性、収益性の改善が見込まれます。",
+        colors.HexColor("#f97316"),
+    ),
+    (
+        "D",
+        "早急な改善が必要",
+        "探す時間、歩行などが多く発生して、生産性、収益性を大きく下げており、至急改善が必要です。<br/>改善を行うことで20％以上の生産性、収益性の改善が見込まれます。",
+        colors.HexColor("#ef4444"),
+    ),
+]
+
+
+def _box(text: str, style, bg: colors.Color = LIGHT_BG, width_mm: float = 170) -> Table:
     """テキストを枠付きボックスで表示する"""
     p = Paragraph(text, style)
-    t = Table([[p]], colWidths=[170 * mm])
+    t = Table([[p]], colWidths=[width_mm * mm])
     t.setStyle(TableStyle([
-        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
+        ('BOX', (0, 0), (-1, -1), 0.5, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), bg),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [LIGHT_BG]),
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [bg]),
     ]))
     return t
 
@@ -91,13 +148,17 @@ def _grade(score: int) -> tuple[str, colors.Color]:
 
 
 def _grade_description(grade: str) -> str:
-    descriptions = {
-        "A": "2S（整理、整頓）が高いレベルであり、ムダが少ない現場です。維持管理（習慣化）が課題となります。",
-        "B": "大きな問題は少ないものの、一部に改善余地があります。改善を行い、現場の収益力を高めましょう。",
-        "C": "作業効率や安全面に影響する課題が見られ、早めの対応が必要です。改善を行うことで10％程度の生産性、収益性の改善が見込まれます。",
-        "D": "探す時間、歩行などが多く発生して、生産性、収益性を大きく下げており、至急改善が必要です。改善を行うことで20％以上の生産性、収益性の改善が見込まれます。",
-    }
-    return descriptions.get(grade, "")
+    for code, _title, desc, _color in GRADE_DEFINITIONS:
+        if code == grade:
+            return desc.replace("<br/>", " ")
+    return ""
+
+
+def _grade_title(grade: str) -> str:
+    for code, title, _desc, _color in GRADE_DEFINITIONS:
+        if code == grade:
+            return title
+    return ""
 
 
 def _prepare_pdf_image(image_bytes: bytes) -> tuple[io.BytesIO, float, float] | tuple[None, None, None]:
@@ -107,13 +168,13 @@ def _prepare_pdf_image(image_bytes: bytes) -> tuple[io.BytesIO, float, float] | 
     pil = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
     pil.thumbnail((PDF_IMAGE_MAX_W_PX, PDF_IMAGE_MAX_H_PX), PILImage.LANCZOS)
 
-    max_w = 85 * mm
+    max_w = 82 * mm
     ratio = max_w / pil.width
     new_h = pil.height * ratio
-    if new_h > 60 * mm:
-        ratio = (60 * mm) / pil.height
+    if new_h > 92 * mm:
+        ratio = (92 * mm) / pil.height
         max_w = pil.width * ratio
-        new_h = 60 * mm
+        new_h = 92 * mm
 
     img_buf = io.BytesIO()
     pil.save(
@@ -151,131 +212,245 @@ def generate_pdf(
 
     # ── ヘッダー ──
     story.append(Paragraph("5S 診断レポート", s['title']))
-    story.append(Spacer(1, 4))
     now_str = datetime.now().strftime("%Y/%m/%d")
     meta = f"診断日：{now_str}　　会社名：{company or '未入力'}　　部門：{location or '未入力'}"
     story.append(Paragraph(meta, s['subtitle']))
     story.append(HRFlowable(width="100%", color=PRIMARY, thickness=1.5))
     story.append(Spacer(1, 6))
 
-    # ── 写真 ＋ Grade 横並び ──
+    # ── 写真 ＋ Grade 評価 ──
     overall = result.get("overall_score", 0)
     grade, grade_color = _grade(overall)
-    grade_description = _grade_description(grade)
 
     img_el = None
     prepared_img, max_w, new_h = _prepare_pdf_image(image_bytes)
     if prepared_img:
         img_el = Image(prepared_img, width=max_w, height=new_h)
 
-    grade_content = [
-        [Paragraph("TOTAL GRADE", s['small'])],
-        [Paragraph(grade, ParagraphStyle(
-            'grade', fontName=FONT, fontSize=32, leading=36,
-            textColor=grade_color, alignment=1
-        ))],
-        [Paragraph(
-            grade_description,
-            ParagraphStyle(
-                'grade_desc_single',
-                fontName=FONT,
-                fontSize=8,
-                leading=14,
-                textColor=DARK,
-                alignment=0,
-            )
-        )],
+    image_card_parts: list[Any] = [
+        Table(
+            [[Paragraph("診断画像", s['label_white'])]],
+            colWidths=[80 * mm],
+            style=TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
+                ('BOX', (0, 0), (-1, -1), 0.5, PRIMARY),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ])
+        ),
+        Spacer(1, 4),
     ]
-    grade_table = Table(grade_content, colWidths=[70 * mm])
-    grade_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('ALIGN', (0, 2), (0, 2), 'LEFT'),
+    if img_el:
+        image_card_parts.append(img_el)
+    else:
+        image_card_parts.append(Paragraph("画像なし", s['small']))
+    image_card = Table([[image_card_parts]], colWidths=[84 * mm])
+    image_card.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
 
-    if img_el:
-        top_table = Table([[img_el, grade_table]],
-                          colWidths=[95 * mm, 75 * mm])
-        top_table.setStyle(TableStyle([
+    grade_rows: list[list[Any]] = [[
+        Table(
+            [[Paragraph("グレード評価（4段階評価）", s['label_white'])]],
+            colWidths=[80 * mm],
+            style=TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
+                ('BOX', (0, 0), (-1, -1), 0.5, PRIMARY),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ])
+        )
+    ]]
+    for idx, (code, title, desc, color) in enumerate(GRADE_DEFINITIONS):
+        is_selected = code == grade
+        left = Table([[
+            Paragraph(
+                f"<para align='center'><font color='{color.hexval()}' size='26'><b>{code}</b></font><br/><font color='{color.hexval()}' size='8'><b>{title}</b></font></para>",
+                s['grade_desc']
+            )
+        ]], colWidths=[18 * mm])
+        left.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (0, 0), 0),
-            ('RIGHTPADDING', (1, 0), (1, 0), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
         ]))
-        story.append(top_table)
-    else:
-        story.append(grade_table)
+        right = Paragraph(desc, s['grade_desc'])
+        row = Table([[left, right]], colWidths=[22 * mm, 55 * mm])
+        row_style = [
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.4, BORDER if idx < len(GRADE_DEFINITIONS) - 1 else colors.white),
+        ]
+        if is_selected:
+            row_style.extend([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fbff')),
+                ('BOX', (0, 0), (-1, -1), 0.7, color),
+            ])
+        row.setStyle(TableStyle(row_style))
+        grade_rows.append([row])
+    grade_card = Table(grade_rows, colWidths=[84 * mm])
+    grade_card.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
 
+    top_table = Table([[image_card, grade_card]], colWidths=[85 * mm, 85 * mm])
+    top_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(top_table)
     story.append(Spacer(1, 8))
 
     # ── 総評 ──
     summary = edited_summary or str(result.get("summary") or "")
     story.append(Paragraph("■ 総評", s['section']))
-    story.append(_box(summary, s['box_text']))
+    story.append(_box(summary, s['summary_text']))
     story.append(Spacer(1, 6))
 
     # ── 2S診断詳細 ──
     story.append(Paragraph("■ 2S 診断詳細", s['section']))
+    detail_rows = []
     for key, label in [("seiri", "整理（Seiri）"), ("seiton", "整頓（Seiton）")]:
         item = result.get(key, {})
         score_val = item.get("score", 0)
         item_grade, _ = _grade(score_val)
         comment = item.get("comment", "")
         priority = item.get("priority", "中")
-        story.append(Paragraph(
-            f"{label}　Grade {item_grade}　／　優先度：{priority}",
-            ParagraphStyle(
-                'item_title', fontName=FONT, fontSize=9,
-                textColor=DARK, spaceBefore=4, spaceAfter=2
-            )
-        ))
-        story.append(_box(comment, s['box_text']))
-        story.append(Spacer(1, 3))
-
-    story.append(Spacer(1, 4))
+        item_icon = Table(
+            [[Paragraph(label, ParagraphStyle(
+                'item_icon', fontName=FONT, fontSize=8.5, textColor=colors.HexColor('#2f855a'), alignment=1
+            ))]],
+            colWidths=[22 * mm],
+        )
+        item_icon.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 0.5, BORDER),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#edf7ed')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        meta = Paragraph(
+            f"Grade：{item_grade}　　優先度：{priority}<br/>{comment}",
+            s['detail_text']
+        )
+        detail_rows.append([item_icon, meta])
+    detail_table = Table(detail_rows, colWidths=[28 * mm, 142 * mm])
+    detail_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('LINEBELOW', (0, 0), (-1, 0), 0.4, BORDER),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(detail_table)
+    story.append(Spacer(1, 6))
 
     # ── 改善アクション ──
     actions = edited_actions or result.get("action_items") or []
     story.append(Paragraph("■ すぐに実行できる改善アクション", s['section']))
-    priority_colors = [
-        colors.HexColor('#ef4444'),
-        colors.HexColor('#64748b'),
-        colors.HexColor('#94a3b8'),
-    ]
+    action_rows = []
     for i, action in enumerate(actions):
-        c = priority_colors[i] if i < len(priority_colors) else priority_colors[-1]
         num = Paragraph(str(i + 1), ParagraphStyle(
             'num', fontName=FONT, fontSize=8,
             textColor=colors.white, alignment=1
         ))
         num_cell = Table([[num]], colWidths=[5 * mm], rowHeights=[5 * mm])
         num_cell.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, 0), c),
+            ('BACKGROUND', (0, 0), (0, 0), PRIMARY),
             ('ALIGN', (0, 0), (0, 0), 'CENTER'),
             ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
         ]))
-        action_para = Paragraph(action, s['box_text'])
-        action_row = Table([[num_cell, action_para]],
-                           colWidths=[8 * mm, 162 * mm])
-        action_row.setStyle(TableStyle([
+        action_para = Paragraph(action, s['detail_text'])
+        action_rows.append([num_cell, action_para])
+    if action_rows:
+        action_table = Table(action_rows, colWidths=[10 * mm, 160 * mm])
+        action_table.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+            ('LINEBELOW', (0, 0), (-1, -2), 0.4, BORDER),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 2),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ]))
-        story.append(action_row)
+        story.append(action_table)
 
-    # ── フッター ──
     story.append(Spacer(1, 8))
-    story.append(HRFlowable(width="100%", color=colors.HexColor('#e2e8f0')))
-    story.append(Spacer(1, 3))
-    story.append(Paragraph(
-        f"ファイル名：{filename}　　生成日時：{datetime.now().strftime('%Y/%m/%d %H:%M')}",
-        s['footer']
-    ))
+
+    # ── 2S 学習セクション ──
+    story.append(Paragraph("■ 2S（整理、整頓）の具体的なやり方を学ぶ", s['section']))
+    qr_cell = Table(
+        [[Paragraph("QRコード", s['qr_label'])]],
+        colWidths=[22 * mm],
+        rowHeights=[22 * mm],
+    )
+    qr_cell.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+    ]))
+    learn_left = Table([[
+        Paragraph("整理", ParagraphStyle('learn_label', fontName=FONT, fontSize=9, textColor=DARK, alignment=1)),
+        qr_cell
+    ]], colWidths=[45 * mm, 30 * mm])
+    learn_right = Table([[
+        Paragraph("整頓", ParagraphStyle('learn_label2', fontName=FONT, fontSize=9, textColor=DARK, alignment=1)),
+        qr_cell
+    ]], colWidths=[45 * mm, 30 * mm])
+    learn_left.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    learn_right.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.6, BORDER),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    learn_table = Table([[learn_left, learn_right]], colWidths=[85 * mm, 85 * mm])
+    learn_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(learn_table)
 
     def _set_pdf_meta(canvas, _doc) -> None:
         canvas.setTitle(safe_title)
