@@ -206,9 +206,10 @@ def _prepare_embedded_image(image_bytes: bytes) -> str:
     if not image_bytes:
         return ""
     pil = PILImage.open(io.BytesIO(image_bytes)).convert("RGB")
-    pil.thumbnail((1200, 1200), PILImage.LANCZOS)
+    # PDF上の表示サイズに対して十分な解像度だけ残し、HTML→PDF変換を軽くする
+    pil.thumbnail((900, 900), PILImage.LANCZOS)
     out = io.BytesIO()
-    pil.save(out, format="JPEG", quality=PDF_IMAGE_QUALITY, optimize=True, progressive=True)
+    pil.save(out, format="JPEG", quality=52, optimize=True, progressive=True)
     return f"data:image/jpeg;base64,{base64.b64encode(out.getvalue()).decode('ascii')}"
 
 
@@ -305,7 +306,7 @@ def _build_report_html(
         }}
         .report {{
           width: 100%;
-          padding: 4px 6px 6px;
+          padding: 2px 3px 3px;
           background: #fff;
         }}
         .header {{
@@ -313,7 +314,7 @@ def _build_report_html(
           align-items: flex-start;
           justify-content: space-between;
           gap: 10px;
-          padding-bottom: 6px;
+          padding-bottom: 4px;
           border-bottom: 2px solid #0B2E5F;
         }}
         .header-title {{
@@ -351,15 +352,15 @@ def _build_report_html(
         .top-section {{
           display: flex;
           gap: 10px;
-          margin-top: 6px;
-          margin-bottom: 10px;
+          margin-top: 4px;
+          margin-bottom: 7px;
         }}
         .photo-card,
         .grade-card {{
           width: 50%;
           border: 1px solid #C9D3E3;
           border-radius: 10px;
-          padding: 8px;
+          padding: 6px;
           background: #fff;
           min-height: 282px;
         }}
@@ -371,7 +372,7 @@ def _build_report_html(
           font-weight: 700;
           border-radius: 6px;
           padding: 3px 9px;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
         }}
         .photo-frame {{
           width: 100%;
@@ -396,7 +397,7 @@ def _build_report_html(
         .grade-list {{
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 3px;
         }}
         .grade-row {{
           display: grid;
@@ -404,8 +405,8 @@ def _build_report_html(
           gap: 10px;
           border: 1px solid #D9E1EC;
           border-radius: 8px;
-          padding: 7px 8px;
-          min-height: 56px;
+          padding: 5px 6px;
+          min-height: 52px;
           background: #fff;
         }}
         .grade-row.selected {{
@@ -421,20 +422,20 @@ def _build_report_html(
           padding-right: 8px;
         }}
         .grade-letter {{
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 700;
           line-height: 1;
-          margin-bottom: 2px;
+          margin-bottom: 1px;
         }}
         .grade-title {{
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 700;
           line-height: 1.2;
           text-align: center;
         }}
         .grade-desc {{
-          font-size: 9px;
-          line-height: 1.45;
+          font-size: 8.4px;
+          line-height: 1.35;
           color: #1e293b;
           align-self: center;
         }}
@@ -442,33 +443,33 @@ def _build_report_html(
           border: 1px solid #C9D3E3;
           border-radius: 10px;
           background: #fff;
-          margin-top: 10px;
+          margin-top: 7px;
         }}
         .card-header {{
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 6px 10px 0;
+          padding: 5px 8px 0;
           color: #0B2E5F;
           font-size: 12px;
           font-weight: 700;
         }}
         .card-body {{
-          padding: 5px 10px 8px;
+          padding: 4px 8px 6px;
         }}
         .summary-text {{
-          font-size: 9.2px;
-          line-height: 1.5;
+          font-size: 9px;
+          line-height: 1.42;
           color: #1e293b;
         }}
         .detail-card .card-body {{
-          padding-top: 3px;
+          padding-top: 2px;
         }}
         .detail-row {{
           display: grid;
           grid-template-columns: 94px 1fr;
           gap: 10px;
-          padding: 6px 0;
+          padding: 5px 0;
           border-top: 1px solid #E3EAF4;
         }}
         .detail-row:first-child {{
@@ -485,25 +486,25 @@ def _build_report_html(
           align-items: center;
           justify-content: center;
           text-align: center;
-          padding: 6px;
-          min-height: 36px;
+          padding: 5px;
+          min-height: 34px;
         }}
         .detail-meta {{
           color: #0B2E5F;
-          font-size: 9px;
+          font-size: 8.6px;
           font-weight: 700;
-          margin-bottom: 1px;
+          margin-bottom: 2px;
         }}
         .detail-text {{
-          font-size: 9px;
-          line-height: 1.5;
+          font-size: 8.8px;
+          line-height: 1.42;
           color: #1e293b;
           word-break: break-word;
         }}
         .action-card .card-header.bar {{
           background: #0B2E5F;
           color: #fff;
-          padding: 6px 10px;
+          padding: 5px 8px;
           margin: 0;
           display: block;
         }}
@@ -514,7 +515,7 @@ def _build_report_html(
           display: grid;
           grid-template-columns: 18px 1fr;
           gap: 10px;
-          padding: 7px 0;
+          padding: 5px 0;
           border-top: 1px solid #E3EAF4;
         }}
         .action-row:first-child {{
@@ -534,13 +535,13 @@ def _build_report_html(
           margin-top: 2px;
         }}
         .action-text {{
-          font-size: 9px;
-          line-height: 1.5;
+          font-size: 8.8px;
+          line-height: 1.42;
           color: #1e293b;
           word-break: break-word;
         }}
         .learning-card .card-body {{
-          padding-top: 3px;
+          padding-top: 2px;
         }}
         .learning-grid {{
           display: flex;
@@ -550,11 +551,11 @@ def _build_report_html(
           width: 50%;
           border: 1px solid #D9E1EC;
           border-radius: 8px;
-          padding: 8px;
+          padding: 6px 8px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          min-height: 58px;
+          min-height: 50px;
         }}
         .learning-label {{
           color: #2F855A;
@@ -695,24 +696,283 @@ def generate_pdf(
     seiri_video_url: str = "",
     seiton_video_url: str = "",
 ) -> bytes:
-    """HTML/CSS ベースでA4帳票PDFを生成してbytesで返す"""
-    try:
-        from weasyprint import HTML
-    except Exception as e:
-        raise RuntimeError(
-            "HTML/CSSベースのPDF生成には weasyprint が必要です。requirements.txt と packages.txt の追加後に再デプロイしてください。"
-        ) from e
+    """reportlab の固定レイアウトでA4帳票PDFを生成してbytesで返す"""
+    styles = _styles()
+    overall_score = int(result.get("overall_score", 0) or 0)
+    selected_grade, _selected_color = _grade(overall_score)
+    selected_grade_description = _grade_description(selected_grade)
+    summary = edited_summary or str(result.get("summary") or "")
+    actions = edited_actions or result.get("action_items") or []
+    now_str = datetime.now().strftime("%Y/%m/%d")
 
-    html_content = _build_report_html(
-        result=result,
-        image_data_url=_prepare_embedded_image(image_bytes),
-        filename=filename,
-        company=company,
-        location=location,
-        edited_summary=edited_summary,
-        edited_actions=edited_actions or [],
+    buf = io.BytesIO()
+    c = pdfcanvas.Canvas(buf, pagesize=A4)
+    c.setTitle("5S診断レポート")
+
+    page_x = MARGIN
+    page_y = MARGIN
+    page_w = PAGE_W - (MARGIN * 2)
+    page_h = PAGE_H - (MARGIN * 2)
+    current_top = PAGE_H - MARGIN
+
+    def draw_para(text: str, style: ParagraphStyle, x: float, y_top: float, width: float, height: float) -> float:
+        para = Paragraph((text or "").replace("\n", "<br/>"), style)
+        _w, used_h = para.wrap(width, height)
+        para.drawOn(c, x, y_top - used_h)
+        return used_h
+
+    def draw_card_header(title: str, x: float, y_top: float, w: float, dark_bar: bool = False) -> float:
+        bar_h = 8 * mm if dark_bar else 6.5 * mm
+        if dark_bar:
+            c.setFillColor(NAVY)
+            c.roundRect(x + 0.5, y_top - bar_h, w - 1.0, bar_h, 6, stroke=0, fill=1)
+            c.setFillColor(colors.white)
+            c.setFont(FONT, 9.5)
+            c.drawString(x + 8, y_top - bar_h + 5.5, title)
+        else:
+            c.setFillColor(NAVY)
+            c.setFont(FONT, 10)
+            c.drawString(x + 8, y_top - bar_h + 4.5, title)
+        return bar_h
+
+    # Header
+    header_h = 15 * mm
+    c.setFillColor(NAVY)
+    c.setFont(FONT, 18)
+    c.drawString(page_x, current_top - 6 * mm, "5S 診断レポート")
+
+    meta_x = page_x + 82 * mm
+    meta_w = page_w - (meta_x - page_x)
+    item_w = meta_w / 3.0
+    meta_items = [
+        ("診断日", now_str),
+        ("会社名", company or "未入力"),
+        ("診断場所", location or "未入力"),
+    ]
+    for idx, (label, value) in enumerate(meta_items):
+        item_x = meta_x + (item_w * idx)
+        c.setFillColor(GRAY)
+        c.setFont(FONT, 7)
+        c.drawString(item_x, current_top - 4.5 * mm, label)
+        c.setStrokeColor(LINE)
+        c.setLineWidth(0.8)
+        c.line(item_x, current_top - 8.2 * mm, item_x + item_w - 5, current_top - 8.2 * mm)
+        c.setFillColor(DARK)
+        c.setFont(FONT, 8)
+        c.drawString(item_x + 2, current_top - 7.2 * mm, str(value)[:26])
+
+    c.setStrokeColor(NAVY)
+    c.setLineWidth(1.8)
+    c.line(page_x, current_top - header_h, page_x + page_w, current_top - header_h)
+    current_top -= header_h + (2 * mm)
+
+    # Top section
+    gap = 3.5 * mm
+    col_w = (page_w - gap) / 2.0
+    top_h = 84 * mm
+    left_x = page_x
+    right_x = page_x + col_w + gap
+    top_y = current_top - top_h
+
+    _draw_round_card(c, left_x, top_y, col_w, top_h, radius=7, stroke=LINE, line_width=0.9)
+    _draw_round_card(c, right_x, top_y, col_w, top_h, radius=7, stroke=LINE, line_width=0.9)
+    _draw_label(c, left_x + 4, current_top - 8 * mm, "診断画像", width=24 * mm, height=6 * mm)
+    _draw_label(c, right_x + 4, current_top - 8 * mm, "グレード評価（4段階評価）", width=45 * mm, height=6 * mm)
+
+    image_box_x = left_x + 6
+    image_box_y = top_y + 6
+    image_box_w = col_w - 12
+    image_box_h = top_h - 16
+    c.setStrokeColor(colors.HexColor("#D9E1EC"))
+    c.setLineWidth(0.8)
+    c.roundRect(image_box_x, image_box_y, image_box_w, image_box_h, 6, stroke=1, fill=0)
+    if image_bytes:
+        img_buf, _tmp_w, _tmp_h = _prepare_pdf_image(image_bytes)
+        if img_buf:
+            image_reader = ImageReader(img_buf)
+            iw, ih = image_reader.getSize()
+            fit_w, fit_h = _fit_rect(iw, ih, image_box_w - 4, image_box_h - 4)
+            draw_x = image_box_x + ((image_box_w - fit_w) / 2)
+            draw_y = image_box_y + ((image_box_h - fit_h) / 2)
+            c.drawImage(image_reader, draw_x, draw_y, width=fit_w, height=fit_h, preserveAspectRatio=True, mask='auto')
+    else:
+        c.setFillColor(GRAY)
+        c.setFont(FONT, 9)
+        c.drawCentredString(image_box_x + (image_box_w / 2), image_box_y + (image_box_h / 2), "画像なし")
+
+    grade_inner_x = right_x + 6
+    grade_inner_w = col_w - 12
+    row_gap = 2.4 * mm
+    row_h = (top_h - 18 - (row_gap * 3)) / 4.0
+    row_top = current_top - 11 * mm
+    for code, title, desc, color in GRADE_DEFINITIONS:
+        row_y = row_top - row_h
+        row_fill = colors.HexColor("#F7FAFF") if code == selected_grade else colors.white
+        row_stroke = colors.HexColor("#9FB8DA") if code == selected_grade else colors.HexColor("#D9E1EC")
+        _draw_round_card(c, grade_inner_x, row_y, grade_inner_w, row_h, radius=5, fill=row_fill, stroke=row_stroke, line_width=0.8)
+        left_col_w = 24 * mm
+        c.setStrokeColor(LINE)
+        c.setLineWidth(0.6)
+        c.line(grade_inner_x + left_col_w, row_y + 4, grade_inner_x + left_col_w, row_y + row_h - 4)
+
+        c.setFillColor(color)
+        c.setFont(FONT, 22)
+        c.drawCentredString(grade_inner_x + (left_col_w / 2), row_y + row_h - 10.5 * mm, code)
+        c.setFont(FONT, 8.5)
+        c.drawCentredString(grade_inner_x + (left_col_w / 2), row_y + 4.5 * mm, title)
+
+        draw_para(
+            desc,
+            ParagraphStyle(
+                "grade_desc_fixed",
+                fontName=FONT,
+                fontSize=7.2,
+                leading=10,
+                textColor=DARK,
+            ),
+            grade_inner_x + left_col_w + 6,
+            row_y + row_h - 5,
+            grade_inner_w - left_col_w - 12,
+            row_h - 10,
+        )
+        row_top = row_y - row_gap
+
+    current_top = top_y - (2.6 * mm)
+
+    # Summary
+    summary_h = 22 * mm
+    summary_y = current_top - summary_h
+    _draw_round_card(c, page_x, summary_y, page_w, summary_h, radius=7, stroke=LINE, line_width=0.9)
+    draw_card_header("総評", page_x, current_top - 1.5, page_w)
+    draw_para(
+        summary,
+        ParagraphStyle(
+            "summary_fixed",
+            fontName=FONT,
+            fontSize=8.5,
+            leading=12,
+            textColor=DARK,
+        ),
+        page_x + 8,
+        summary_y + summary_h - 12,
+        page_w - 16,
+        summary_h - 16,
     )
-    return HTML(string=html_content).write_pdf()
+    current_top = summary_y - (2.4 * mm)
+
+    # Detail
+    detail_h = 32 * mm
+    detail_y = current_top - detail_h
+    _draw_round_card(c, page_x, detail_y, page_w, detail_h, radius=7, stroke=LINE, line_width=0.9)
+    draw_card_header("2S 診断詳細", page_x, current_top - 1.5, page_w)
+    detail_row_h = (detail_h - 12) / 2.0
+    detail_top = detail_y + detail_h - 8
+    for idx, (key, label) in enumerate([("seiri", "整理（Seiri）"), ("seiton", "整頓（Seiton）")]):
+        item = result.get(key, {}) or {}
+        item_grade, _ = _grade(int(item.get("score", 0) or 0))
+        priority = str(item.get("priority") or "中")
+        comment = str(item.get("comment") or "")
+        row_y = detail_top - detail_row_h
+        if idx > 0:
+            c.setStrokeColor(colors.HexColor("#E3EAF4"))
+            c.setLineWidth(0.6)
+            c.line(page_x + 8, row_y + detail_row_h + 2, page_x + page_w - 8, row_y + detail_row_h + 2)
+        label_w = 26 * mm
+        c.setFillColor(colors.HexColor("#EDF7ED"))
+        c.setStrokeColor(LINE)
+        c.roundRect(page_x + 8, row_y + 4, label_w, detail_row_h - 8, 12, stroke=1, fill=1)
+        c.setFillColor(colors.HexColor("#2F855A"))
+        c.setFont(FONT, 8.5)
+        c.drawCentredString(page_x + 8 + (label_w / 2), row_y + detail_row_h - 8, label)
+        meta_x = page_x + 8 + label_w + 8
+        c.setFillColor(NAVY)
+        c.setFont(FONT, 8)
+        c.drawString(meta_x, row_y + detail_row_h - 10, f"Grade：{item_grade}")
+        c.drawString(meta_x + 32 * mm, row_y + detail_row_h - 10, f"優先度：{priority}")
+        draw_para(
+            comment,
+            ParagraphStyle(
+                "detail_fixed",
+                fontName=FONT,
+                fontSize=8,
+                leading=10.5,
+                textColor=DARK,
+            ),
+            meta_x,
+            row_y + detail_row_h - 14,
+            page_w - (meta_x - page_x) - 10,
+            detail_row_h - 16,
+        )
+        detail_top = row_y
+    current_top = detail_y - (2.4 * mm)
+
+    # Actions
+    action_h = 28 * mm
+    action_y = current_top - action_h
+    _draw_round_card(c, page_x, action_y, page_w, action_h, radius=7, stroke=LINE, line_width=0.9)
+    bar_h = 7 * mm
+    c.setFillColor(NAVY)
+    c.roundRect(page_x + 0.5, current_top - bar_h - 1, page_w - 1, bar_h, 6, stroke=0, fill=1)
+    c.setFillColor(colors.white)
+    c.setFont(FONT, 9.5)
+    c.drawString(page_x + 8, current_top - bar_h + 4.8, "すぐに実行できる改善アクション")
+    action_row_h = (action_h - bar_h - 4) / 3.0
+    action_top = current_top - bar_h - 2
+    for idx in range(3):
+        text = str(actions[idx]) if idx < len(actions) else ""
+        row_y = action_top - action_row_h
+        if idx > 0:
+            c.setStrokeColor(colors.HexColor("#E3EAF4"))
+            c.setLineWidth(0.6)
+            c.line(page_x + 8, row_y + action_row_h, page_x + page_w - 8, row_y + action_row_h)
+        no_x = page_x + 8
+        no_y = row_y + action_row_h - 14
+        c.setFillColor(NAVY)
+        c.roundRect(no_x, no_y, 12, 12, 3, stroke=0, fill=1)
+        c.setFillColor(colors.white)
+        c.setFont(FONT, 8)
+        c.drawCentredString(no_x + 6, no_y + 3.4, str(idx + 1))
+        draw_para(
+            text,
+            ParagraphStyle(
+                "action_fixed",
+                fontName=FONT,
+                fontSize=8,
+                leading=10.5,
+                textColor=DARK,
+            ),
+            no_x + 18,
+            row_y + action_row_h - 3,
+            page_w - 34,
+            action_row_h - 4,
+        )
+        action_top = row_y
+    current_top = action_y - (2.4 * mm)
+
+    # Learning
+    learning_h = 22 * mm
+    learning_y = current_top - learning_h
+    _draw_round_card(c, page_x, learning_y, page_w, learning_h, radius=7, stroke=LINE, line_width=0.9)
+    draw_card_header("2S（整理、整頓）の具体的なやり方を学ぶ", page_x, current_top - 1.5, page_w)
+    learn_gap = 3.5 * mm
+    learn_w = (page_w - 16 - learn_gap) / 2.0
+    learn_y = learning_y + 6
+    for idx, label in enumerate(["整理", "整頓"]):
+        lx = page_x + 8 + (idx * (learn_w + learn_gap))
+        _draw_round_card(c, lx, learn_y, learn_w, learning_h - 12, radius=5, stroke=colors.HexColor("#D9E1EC"), line_width=0.8)
+        c.setFillColor(colors.HexColor("#2F855A"))
+        c.setFont(FONT, 9)
+        c.drawString(lx + 8, learn_y + (learning_h - 12) / 2, label)
+        c.setStrokeColor(LINE)
+        c.roundRect(lx + learn_w - 18 * mm, learn_y + 4, 14 * mm, learning_h - 20, 4, stroke=1, fill=0)
+        c.setFillColor(GRAY)
+        c.setFont(FONT, 8)
+        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 + 3, "QR")
+        c.drawCentredString(lx + learn_w - 11 * mm, learn_y + (learning_h - 12) / 2 - 6, "コード")
+
+    c.showPage()
+    c.save()
+    return buf.getvalue()
 
 
 def generate_zip(reports: list[tuple[str, bytes]]) -> bytes:
