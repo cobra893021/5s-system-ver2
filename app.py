@@ -15,6 +15,12 @@ from dotenv import load_dotenv
 from knowledge import get_knowledge_context
 from pdf_report import generate_pdf, generate_zip
 
+HEIC_GUIDE_LOCAL_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "assets",
+    "画像形式案内.png",
+)
+
 
 def pil_image_to_b64_jpeg(
     pil_img: Image.Image,
@@ -44,6 +50,23 @@ def load_uploaded_image(data: bytes) -> Image.Image:
 def normalize_uploaded_image_bytes(data: bytes, quality: int = 92) -> bytes:
     """アップロード画像を向き補正済みJPEGに統一する。"""
     return pil_image_to_jpeg_bytes(load_uploaded_image(data), quality=quality)
+
+
+def get_local_file_data_url(path: str) -> str:
+    """同梱ファイルがあれば data URL に変換して返す。なければ空文字。"""
+    if not os.path.exists(path):
+        return ""
+    with open(path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("ascii")
+    _, ext = os.path.splitext(path.lower())
+    mime_map = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".pdf": "application/pdf",
+    }
+    mime = mime_map.get(ext, "application/octet-stream")
+    return f"data:{mime};base64,{encoded}"
 
 
 def _gallery_item_key(item: dict[str, Any]) -> tuple[str, str]:
@@ -1919,7 +1942,7 @@ def main(mode: str | None = None):
             )
 
     # ─── 画像アップロード案内 ──────────────────────────────────────
-    heic_guide_url = get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
+    heic_guide_url = get_local_file_data_url(HEIC_GUIDE_LOCAL_PATH) or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
     heic_notice_html = (
         f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
