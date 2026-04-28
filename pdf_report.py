@@ -324,11 +324,13 @@ def draw_summary(c, data: dict[str, Any], y: float) -> float:
     bottom = y - h
 
     rounded_card(c, x, bottom, CONTENT_W, h)
-    draw_summary_icon(c, x + 4 * mm, bottom + h - 16 * mm, 12 * mm, 12 * mm)
+    icon_size = 12 * mm
+    icon_y = bottom + (h - icon_size) / 2
+    draw_summary_icon(c, x + 4 * mm, icon_y, icon_size, icon_size)
 
     c.setFillColor(COLORS["navy"])
     c.setFont(FONT, 10)
-    c.drawString(x + 21 * mm, bottom + h - 9 * mm, "総評")
+    c.drawString(x + 21 * mm, bottom + h - 13 * mm, "総評")
 
     para(c, text, x + 38 * mm, bottom + 4.5 * mm, CONTENT_W - 44 * mm, h - 8.5 * mm, size=8.4, leading=10.6)
 
@@ -336,7 +338,7 @@ def draw_summary(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
-    label_w = 56 * mm
+    label_w = 44 * mm
     comment_w = CONTENT_W - label_w - 8 * mm
     rows = [
         ("整理", "Seiri", data.get("seiri", {})),
@@ -376,12 +378,12 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
         icon_cy = ry + row_h / 2
         draw_green_item_icon(c, icon_cx, icon_cy, icon_kind)
 
-        label_x = x + 24.5 * mm
+        label_x = x + 22.5 * mm
         c.setFillColor(COLORS["green"])
-        c.setFont(FONT, 11.5)
-        c.drawString(label_x, ry + row_h / 2 + 3.4 * mm, jp)
-        c.setFont(FONT, 8.8)
-        c.drawString(label_x, ry + row_h / 2 - 4.3 * mm, f"({en})")
+        c.setFont(FONT, 10.8)
+        c.drawString(label_x, ry + row_h / 2 + 3.2 * mm, jp)
+        c.setFont(FONT, 8.6)
+        c.drawString(label_x, ry + row_h / 2 - 3.9 * mm, f"({en})")
 
         c.setStrokeColor(COLORS["line"])
         c.line(x + label_w, ry + 3 * mm, x + label_w, ry + row_h - 3 * mm)
@@ -390,12 +392,12 @@ def draw_2s_detail(c, data: dict[str, Any], y: float) -> float:
         priority = item.get("priority", "")
         comment = item.get("comment", "")
 
-        tx = x + label_w + 5 * mm
+        tx = x + label_w + 3.2 * mm
         c.setFont(FONT, 8.5)
         c.setFillColor(COLORS["navy"])
         c.drawString(tx, ry + row_h - 8 * mm, f"Grade：{score_grade}")
         c.setFillColor(COLORS["sub"])
-        c.drawString(tx + 22 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
+        c.drawString(tx + 17 * mm, ry + row_h - 8 * mm, f"優先度：{priority}")
         c.setFillColor(COLORS["text"])
 
         para(c, comment, tx, ry + 3.5 * mm, CONTENT_W - label_w - 8 * mm, row_h - 13 * mm, size=7.9, leading=10.2)
