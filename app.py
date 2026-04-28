@@ -1942,15 +1942,28 @@ def main(mode: str | None = None):
             )
 
     # ─── 画像アップロード案内 ──────────────────────────────────────
-    heic_guide_url = get_local_file_data_url(HEIC_GUIDE_LOCAL_PATH) or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
+    local_heic_guide_url = get_local_file_data_url(HEIC_GUIDE_LOCAL_PATH)
+    heic_guide_url = local_heic_guide_url or get_runtime_secret("HEIC_GUIDE_PDF_URL", "").strip()
     heic_notice = "iPhoneで撮影した写真をアップロードする際の注意点"
-    heic_notice_html = (
-        f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
-        f'rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">'
-        f'{heic_notice}</a>'
-        if heic_guide_url
-        else f'<span style="color:#dc2626; font-weight:800;">{heic_notice}</span>'
-    )
+    if local_heic_guide_url:
+        heic_notice_html = f"""
+        <details style="margin-top:0.35rem;">
+          <summary style="color:#dc2626; font-weight:800; text-decoration:underline; cursor:pointer;">
+            {heic_notice}
+          </summary>
+          <div style="margin-top:0.65rem;">
+            <img src="{html.escape(local_heic_guide_url, quote=True)}" alt="{heic_notice}" style="width:100%; border:1px solid #dbe4ee; border-radius:10px;" />
+          </div>
+        </details>
+        """
+    elif heic_guide_url:
+        heic_notice_html = (
+            f'<a href="{html.escape(heic_guide_url, quote=True)}" target="_blank" '
+            f'rel="noopener noreferrer" style="color:#dc2626; font-weight:800; text-decoration:underline;">'
+            f'{heic_notice}</a>'
+        )
+    else:
+        heic_notice_html = f'<span style="color:#dc2626; font-weight:800;">{heic_notice}</span>'
     st.markdown(f"""
     <div style="background-color:#EEF5FB; border-left:4px solid #346D99; padding:1rem 1.4rem; border-radius:8px; margin-bottom:1rem;">
         <div style="color:#346D99; font-weight:700; font-size:1.05rem; margin-bottom:0.4rem;">診断する写真をアップロード（最大10枚）</div>
