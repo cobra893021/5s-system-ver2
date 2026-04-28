@@ -41,6 +41,13 @@ COLORS = {
     "D": colors.HexColor("#ef4444"),
 }
 
+GRADE_ACTIVE_FILLS = {
+    "A": colors.HexColor("#EFF6FF"),
+    "B": colors.HexColor("#F0FDF4"),
+    "C": colors.HexColor("#FFF7ED"),
+    "D": colors.HexColor("#FEF2F2"),
+}
+
 GRADE_MASTER = {
     "A": {
         "label": "とても良好",
@@ -291,7 +298,7 @@ def draw_top_section(c, data: dict[str, Any], y: float) -> float:
         color = COLORS[grade]
         is_active = grade == selected
 
-        fill = colors.HexColor("#FFF7ED") if is_active and grade == "C" else None
+        fill = GRADE_ACTIVE_FILLS.get(grade) if is_active else None
         stroke = color if is_active else COLORS["line"]
         rounded_card(c, inner_x, gy, inner_w, row_h, radius=3, stroke=stroke, fill=fill, width=1.6 if is_active else 0.7)
 
