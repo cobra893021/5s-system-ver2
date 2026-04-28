@@ -230,10 +230,10 @@ def draw_top_section(c, data: dict[str, Any], y: float) -> float:
 
         c.setFillColor(color)
         c.setFont(FONT, 24)
-        c.drawCentredString(inner_x + left_w / 2, gy + row_h - 11 * mm, grade)
+        c.drawCentredString(inner_x + left_w / 2, gy + row_h - 10.2 * mm, grade)
 
         c.setFont(FONT, 8.5)
-        c.drawCentredString(inner_x + left_w / 2, gy + 4.5 * mm, GRADE_MASTER[grade]["label"])
+        c.drawCentredString(inner_x + left_w / 2, gy + 3.0 * mm, GRADE_MASTER[grade]["label"])
 
         text_x = inner_x + left_w + 5 * mm
         text_y = gy + 3 * mm
@@ -370,7 +370,7 @@ def draw_actions(c, data: dict[str, Any], y: float) -> float:
 
 
 def draw_learning(c, y: float) -> float:
-    h = 20 * mm
+    h = 24 * mm
     x = MARGIN
     bottom = y - h
 
@@ -385,9 +385,9 @@ def draw_learning(c, y: float) -> float:
 
     for i, (label, _qr) in enumerate(items):
         cx = x + col_w * i + 4 * mm
-        cy = bottom + 3 * mm
+        cy = bottom + 2.5 * mm
         cw = col_w - 8 * mm
-        ch = 12 * mm
+        ch = 11 * mm
 
         rounded_card(c, cx, cy, cw, ch, radius=3, stroke=colors.white, fill=colors.white)
         c.setFillColor(COLORS["green_bg"])
@@ -445,7 +445,7 @@ def estimate_actions_height(data: dict[str, Any]) -> float:
 
 
 def estimate_learning_height() -> float:
-    return 20 * mm
+    return 24 * mm
 
 
 def generate_pdf(
